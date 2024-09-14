@@ -1,0 +1,14 @@
+[
+    {
+        "name": "Dev",
+        "mode": "debug",
+        "flavor": "dev",
+        "target": "main.dart"
+    },
+    {
+        "name": "Prod",
+        "mode": "prod",
+        "flavor": "prod",
+        "target": "main.dart"
+    }
+]
