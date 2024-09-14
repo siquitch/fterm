@@ -13,7 +13,6 @@ type Device struct {
 }
 
 func GetDevices() ([]Device, error) {
-	// TODO get devices
 	var devices []Device
 
 	cmd := exec.Command("flutter", "devices")
@@ -32,11 +31,6 @@ func GetDevices() ([]Device, error) {
 			if err != nil {
 				return devices, err
 			}
-			// if count == 1 {
-			// 	fmt.Printf("Found %s device\n", devicecount)
-			// } else {
-			// 	fmt.Printf("Found %s devices\n", devicecount)
-			// }
 			continue
 		}
 		// Trim devices
@@ -51,5 +45,26 @@ func GetDevices() ([]Device, error) {
 
 		devices = append(devices, device)
 	}
+	return devices, nil
+}
+
+func GetEmulators() ([]Device, error) {
+	var devices []Device
+
+	cmd := exec.Command("flutter", "emulators")
+
+	output, err := cmd.Output()
+
+	if err != nil {
+		fmt.Println(err)
+		return devices, err
+	}
+
+	lines := strings.Split(string(output), "\n")
+
+    for _, line := range lines {
+        fmt.Println(line)
+    }
+
 	return devices, nil
 }
