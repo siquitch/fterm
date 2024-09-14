@@ -5,6 +5,7 @@ package cmd
 
 import (
 	"flutterterm/utils"
+	"fmt"
 
 	"github.com/spf13/cobra"
 )
@@ -13,9 +14,13 @@ import (
 var emulatorsCmd = &cobra.Command{
 	Use:   "emulators",
 	Short: "Start a new emulator",
-	Long: ``,
+	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-        utils.GetEmulators()
+		_, err := utils.GetEmulators()
+
+		if err != nil {
+			fmt.Println(err)
+		}
 	},
 }
 

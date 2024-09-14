@@ -56,7 +56,6 @@ func GetEmulators() ([]Device, error) {
 	output, err := cmd.Output()
 
 	if err != nil {
-		fmt.Println(err)
 		return devices, err
 	}
 
