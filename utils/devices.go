@@ -1,50 +1,33 @@
 package utils
 
 import (
+	"encoding/json"
 	"fmt"
 	"os/exec"
-	"strconv"
 	"strings"
 )
 
 type Device struct {
-	Name string
-	ID   string
+	Name string `json:"name"`
+	ID   string `json:"id"`
 }
 
 func GetDevices() ([]Device, error) {
 	var devices []Device
 
-	cmd := exec.Command("flutter", "devices")
+	cmd := exec.Command("flutter", "devices", "--machine")
 	output, err := cmd.Output()
 	if err != nil {
 		fmt.Println(err)
 		return devices, err
 	}
 
-	lines := strings.Split(string(output), "\n")
+	err = json.Unmarshal(output, &devices)
 
-	for i, line := range lines {
-		if strings.Contains(line, "connected device") && i == 0 {
-			devicecount := strings.Split(line, " ")[1]
-			_, err := strconv.Atoi(devicecount)
-			if err != nil {
-				return devices, err
-			}
-			continue
-		}
-		// Trim devices
-		parts := strings.Split(line, "•")
-		if len(parts) < 3 {
-			continue
-		}
-		device := Device{
-			Name: strings.TrimSpace(parts[0]),
-			ID:   strings.TrimSpace(parts[1]),
-		}
-
-		devices = append(devices, device)
+	if err != nil {
+		return devices, err
 	}
+
 	return devices, nil
 }
 
@@ -61,9 +44,34 @@ func GetEmulators() ([]Device, error) {
 
 	lines := strings.Split(string(output), "\n")
 
-    for _, line := range lines {
-        fmt.Println(line)
-    }
+	for i, line := range lines {
+		if line == "" {
+			continue
+		}
+		// No useful info on these lines
+		if i >= 0 && i < 3 {
+			continue
+		}
+
+		// Emulators start on line 4
+
+		if line == "" {
+			break
+		}
+
+		parts := strings.Split(line, "•")
+
+		if len(parts) < 4 {
+			continue
+		}
+
+		device := Device{
+			ID:   strings.TrimSpace(parts[0]),
+			Name: strings.TrimSpace(parts[1]),
+		}
+
+		devices = append(devices, device)
+	}
 
 	return devices, nil
 }

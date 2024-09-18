@@ -7,6 +7,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
+
 type RunModel struct {
 	devices         []utils.Device
 	configs         []utils.FlutterConfig
@@ -24,7 +25,7 @@ const (
 	config
 )
 
-func InitialModel(devices []utils.Device, configs []utils.FlutterConfig) RunModel {
+func InitialRunModel(devices []utils.Device, configs []utils.FlutterConfig) RunModel {
 	return RunModel{
 		devices:   devices,
 		configs:   configs,

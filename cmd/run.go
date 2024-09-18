@@ -41,7 +41,7 @@ var runCmd = &cobra.Command{
 			return
 		}
 
-		p := tea.NewProgram(ui.InitialModel(devices, configs))
+		p := tea.NewProgram(ui.InitialRunModel(devices, configs))
 
 		model, err := p.Run()
 
@@ -52,12 +52,12 @@ var runCmd = &cobra.Command{
 
 		runModel, ok := model.(ui.RunModel)
 
-		if !runModel.IsComplete() {
-			return
-		}
-
 		if !ok {
 			fmt.Println("Could not cast tea model to run model")
+		}
+
+		if !runModel.IsComplete() {
+			return
 		}
 
 		setupAndRun(runModel)
@@ -68,10 +68,10 @@ var runCmd = &cobra.Command{
 func setupAndRun(m ui.RunModel) {
 	fmt.Printf("Running %s on %s", m.Selected_config.Name, m.Selected_device.Name)
 
-    // var args string
-    //
-    // // Device
-    // args = fmt.Sprint("-d ")
+	// var args string
+	//
+	// // Device
+	// args = fmt.Sprint("-d ")
 }
 
 // Check if in a flutter project

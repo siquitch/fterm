@@ -4,19 +4,65 @@ Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"flutterterm/ui"
 	"flutterterm/utils"
 	"fmt"
+	"os/exec"
 
+	// tea "github.com/charmbracelet/bubbletea"
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/spf13/cobra"
 )
 
 // emulatorsCmd represents the emulators command
 var emulatorsCmd = &cobra.Command{
 	Use:   "emulators",
-	Short: "Start a new emulator",
+	Short: "Start an emulator as detected by flutter emulators",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		_, err := utils.GetEmulators()
+		emulators, err := utils.GetEmulators()
+
+		// Whether to cold start the emulator
+		isCold, err := cmd.Flags().GetBool("cold")
+
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		for i, emulator := range emulators {
+			fmt.Println(i, emulator.Name)
+		}
+
+		p := tea.NewProgram(ui.InitialEmulatorModel(emulators))
+
+		model, err := p.Run()
+
+		if err != nil {
+			fmt.Println("Emulators exited with error")
+		}
+
+		emulatorModel, ok := model.(ui.EmulatorModel)
+
+		if !ok {
+			fmt.Println("Could not cast model to emulatorModel")
+		}
+
+		if !emulatorModel.IsComplete() {
+			return
+		}
+
+		device := emulatorModel.SelectedEmulator
+
+		cold := ""
+
+		if isCold {
+			cold = "--cold"
+		}
+
+		// Run the final command
+		flutterCmd := exec.Command("flutter", "emulators", "--launch", device.ID, cold)
+
+		err = flutterCmd.Run()
 
 		if err != nil {
 			fmt.Println(err)
@@ -36,4 +82,6 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// emulatorsCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+
+	emulatorsCmd.Flags().BoolP("cold", "c", false, "Cold start the emulator")
 }
