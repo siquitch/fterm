@@ -8,6 +8,7 @@ import (
 	"flutterterm/utils"
 	"fmt"
 	"os"
+	"os/exec"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/spf13/cobra"
@@ -22,10 +23,11 @@ var runCmd = &cobra.Command{
 	Short: "A guided flutter run command",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		// if !assertRootPath() {
-		// 	return
-		// }
-		// fmt.Println("Flutter directory detected. Getting devices")
+		if !assertRootPath() {
+			return
+		}
+
+		fmt.Println("Flutter directory detected. Getting devices")
 
 		devices, err := utils.GetDevices()
 
@@ -36,9 +38,13 @@ var runCmd = &cobra.Command{
 
 		configs, err := utils.GetConfigs()
 
-		if err != nil {
-			fmt.Printf("There was an error getting configs: %s", err)
-			return
+		// Add a default run config if none exist
+		if len(configs) == 0 {
+			utils.PrintInfo("No configs found, using default\n")
+
+			help := fmt.Sprintf("Try creating a %s file or adding a config to an already created one", utils.ConfigPath)
+			utils.PrintHelp(help)
+			configs = append(configs, utils.DefaultConfig())
 		}
 
 		p := tea.NewProgram(ui.InitialRunModel(devices, configs))
@@ -66,12 +72,32 @@ var runCmd = &cobra.Command{
 
 // Runs command based on the model received
 func setupAndRun(m ui.RunModel) {
-	fmt.Printf("Running %s on %s", m.Selected_config.Name, m.Selected_device.Name)
+	fmt.Printf("Running %s on %s\n\n", m.Selected_config.Name, m.Selected_device.Name)
 
-	// var args string
-	//
-	// // Device
-	// args = fmt.Sprint("-d ")
+	// Device
+	device := m.Selected_device.ID
+	// config := m.Selected_config
+
+	cmd := exec.Command("flutter", "run", "-d", device)
+
+	// For color and input handling
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Stdin = os.Stdin
+
+	err := cmd.Start()
+
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	if err := cmd.Wait(); err != nil {
+		s := fmt.Sprintf("Flutterterm finished with error: %s", err)
+		utils.PrintError(s)
+	} else {
+		fmt.Println("Flutterterm finished successfully")
+	}
 }
 
 // Check if in a flutter project
@@ -79,7 +105,7 @@ func assertRootPath() bool {
 	_, err := os.Stat(pubspec)
 
 	if err != nil {
-		fmt.Println("pubspec.yaml not found. Make sure you are in a flutter directory")
+		utils.PrintError("pubspec.yaml not found. Make sure you are in a flutter directory")
 		return false
 	}
 

@@ -7,6 +7,8 @@ import (
 	"os"
 )
 
+const ConfigPath = ".fterm_config.json"
+
 type FlutterConfig struct {
 	Name   string `json:"name"`
 	Mode   string `json:"mode"`
@@ -16,17 +18,25 @@ type FlutterConfig struct {
 
 func (config FlutterConfig) ToString() string {
 	var s string
-    s = fmt.Sprintf("Config: %s\n", config.Name)
-    s += fmt.Sprintf("Mode: %s\n", config.Mode)
-    s += fmt.Sprintf("Flavor: %s\n", config.Flavor)
-    s += fmt.Sprintf("Target: %s\n", config.Target)
+	s = fmt.Sprintf("Config: %s\n", config.Name)
+	s += fmt.Sprintf("Mode: %s\n", config.Mode)
+	s += fmt.Sprintf("Flavor: %s\n", config.Flavor)
+	s += fmt.Sprintf("Target: %s\n", config.Target)
 	return s
+}
+
+func DefaultConfig() FlutterConfig {
+	return FlutterConfig{
+		Name:   "Default",
+		Mode:   "debug",
+		Target: "main.dart",
+	}
 }
 
 func GetConfigs() ([]FlutterConfig, error) {
 	var configs []FlutterConfig
 
-	config_file, err := os.Open(".test_config.json")
+	config_file, err := os.Open(ConfigPath)
 
 	if err != nil {
 		return configs, err

@@ -2,7 +2,6 @@ package utils
 
 import (
 	"encoding/json"
-	"fmt"
 	"os/exec"
 	"strings"
 )
@@ -12,13 +11,14 @@ type Device struct {
 	ID   string `json:"id"`
 }
 
+// Returns a list of available devices to use
 func GetDevices() ([]Device, error) {
 	var devices []Device
 
 	cmd := exec.Command("flutter", "devices", "--machine")
 	output, err := cmd.Output()
 	if err != nil {
-		fmt.Println(err)
+		PrintError(err.Error())
 		return devices, err
 	}
 
@@ -31,6 +31,7 @@ func GetDevices() ([]Device, error) {
 	return devices, nil
 }
 
+// Return a list of available flutter emulators
 func GetEmulators() ([]Device, error) {
 	var devices []Device
 
