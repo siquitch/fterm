@@ -56,6 +56,9 @@ var emulatorsCmd = &cobra.Command{
 			cold = "--cold"
 		}
 
+		s := fmt.Sprintf("Opening %s", device.Name)
+		utils.PrintInfo(s)
+
 		// Run the final command
 		flutterCmd := exec.Command("flutter", "emulators", "--launch", device.ID, cold)
 
