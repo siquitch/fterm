@@ -40,9 +40,8 @@ var runCmd = &cobra.Command{
 
 		// Add a default run config if none exist
 		if len(configs) == 0 {
-			utils.PrintInfo("No configs found, using default\n")
-
-			help := fmt.Sprintf("Try creating a %s file or adding a config to an already created one", utils.ConfigPath)
+			utils.PrintInfo("No configs found, using default\n\n")
+			help := fmt.Sprintf("Try creating a \"%s\" file or adding a config to an already created one", utils.ConfigPath)
 			utils.PrintHelp(help)
 			configs = append(configs, utils.DefaultConfig())
 		}

@@ -26,11 +26,8 @@ var emulatorsCmd = &cobra.Command{
 		isCold, err := cmd.Flags().GetBool("cold")
 
 		if err != nil {
-			fmt.Println(err)
-		}
-
-		for i, emulator := range emulators {
-			fmt.Println(i, emulator.Name)
+			utils.PrintError(err.Error())
+			return
 		}
 
 		p := tea.NewProgram(ui.InitialEmulatorModel(emulators))

@@ -33,6 +33,7 @@ func GetDevices() ([]Device, error) {
 
 // Return a list of available flutter emulators
 func GetEmulators() ([]Device, error) {
+	PrintInfo("Getting emulators\n\n")
 	var devices []Device
 
 	cmd := exec.Command("flutter", "emulators")
@@ -73,6 +74,9 @@ func GetEmulators() ([]Device, error) {
 
 		devices = append(devices, device)
 	}
+
+	// Remove the first element which is "Name"
+	devices = devices[0:]
 
 	return devices, nil
 }

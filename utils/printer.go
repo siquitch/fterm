@@ -13,5 +13,5 @@ func PrintHelp(s string) {
 }
 
 func PrintInfo(s string) {
-	color.Cyan(s)
+	color.Blue(s)
 }
