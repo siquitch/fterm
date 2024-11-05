@@ -75,9 +75,14 @@ func setupAndRun(m ui.RunModel) {
 
 	// Device
 	device := m.Selected_device.ID
-	// config := m.Selected_config
+	config := m.Selected_config
 
-	cmd := exec.Command("flutter", "run", "-d", device)
+	args := []string{"run", "-d", device}
+	if config.DartDefineFromFile != "" {
+		args = append(args, "--dart-define-from-file", config.DartDefineFromFile)
+	}
+
+	cmd := exec.Command("flutter", args...)
 
 	// For color and input handling
 	cmd.Stdout = os.Stdout
