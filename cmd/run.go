@@ -81,6 +81,9 @@ func setupAndRun(m ui.RunModel) {
 	if config.Target != "" {
 		args = append(args, "-t", config.Target)
 	}
+    if config.Flavor != "" {
+        args = append(args, "--flavor", config.Flavor)
+    }
 	if config.DartDefineFromFile != "" {
 		args = append(args, "--dart-define-from-file", config.DartDefineFromFile)
 	}
