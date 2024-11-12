@@ -78,6 +78,9 @@ func setupAndRun(m ui.RunModel) {
 	config := m.Selected_config
 
 	args := []string{"run", "-d", device}
+	if config.Target != "" {
+		args = append(args, "-t", config.Target)
+	}
 	if config.DartDefineFromFile != "" {
 		args = append(args, "--dart-define-from-file", config.DartDefineFromFile)
 	}
