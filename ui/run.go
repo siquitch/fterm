@@ -7,11 +7,10 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-
 type RunModel struct {
 	devices         []utils.Device
 	configs         []utils.FlutterConfig
-	cursor          int
+	cursorIndex     int
 	cursorLen       int
 	runInfo         map[devicestage]bool
 	Selected_device utils.Device
@@ -27,11 +26,11 @@ const (
 
 func InitialRunModel(devices []utils.Device, configs []utils.FlutterConfig) RunModel {
 	return RunModel{
-		devices:   devices,
-		configs:   configs,
-		cursor:    0,
-		cursorLen: len(devices),
-		runInfo:   make(map[devicestage]bool),
+		devices:     devices,
+		configs:     configs,
+		cursorIndex: 0,
+		cursorLen:   len(devices),
+		runInfo:     make(map[devicestage]bool),
 	}
 }
 
@@ -50,13 +49,18 @@ func (m RunModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 
 		case "up", "k":
-			if m.cursor > 0 {
-				m.cursor--
+			if m.cursorIndex > 0 {
+				m.cursorIndex--
+			} else if m.cursorIndex <= 0 {
+				// Go to bottom of list
+				m.cursorIndex = m.cursorLen - 1
 			}
 
 		case "down", "j":
-			if m.cursor < m.cursorLen-1 {
-				m.cursor++
+			if m.cursorIndex < m.cursorLen-1 {
+				m.cursorIndex++
+			} else if m.cursorIndex >= m.cursorLen-1 {
+				m.cursorIndex = 0
 			}
 
 		case "enter":
@@ -72,15 +76,15 @@ func (m RunModel) doNextThing() (RunModel, tea.Cmd) {
 	var cmd tea.Cmd
 	if _, exists := m.runInfo[device]; !exists {
 		m.runInfo[device] = true
-		m.Selected_device = m.devices[m.cursor]
+		m.Selected_device = m.devices[m.cursorIndex]
 		m.cursorLen = len(m.configs)
 		cmd = nil
 	} else if _, exists := m.runInfo[config]; !exists {
 		m.runInfo[config] = true
-		m.Selected_config = m.configs[m.cursor]
+		m.Selected_config = m.configs[m.cursorIndex]
 		cmd = tea.Quit
 	}
-	m.cursor = 0
+	m.cursorIndex = 0
 	return m, cmd
 }
 
@@ -100,7 +104,7 @@ func (m RunModel) View() string {
 
 			// Is the cursor pointing at this choice?
 			cursor := " " // no cursor
-			if m.cursor == i {
+			if m.cursorIndex == i {
 				cursor = ">" // cursor!
 			}
 
@@ -111,7 +115,7 @@ func (m RunModel) View() string {
 		s = "Select a config\n\n"
 		for i, config := range m.configs {
 			cursor := " " // no cursor
-			if m.cursor == i {
+			if m.cursorIndex == i {
 				cursor = ">" // cursor!
 			}
 
