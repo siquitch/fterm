@@ -45,7 +45,11 @@ If you choose not to use a configuration file, Flutterterm will act as if it is 
 ### **Running Commands**
 
 #### **flutterterm emulators**
-```flutterterm emulators```
+```bash
+flutterterm emulators
+```
 
 ####  **flutterterm run**
-```flutterterm run```
+```bash
+flutterterm run
+```
