@@ -11,14 +11,9 @@ To set up a configuration file, create a `.fterm_config.json` file in the root d
 ### Without a Configuration File
 
 If you choose not to use a configuration file, Flutterterm will act as if it is executing:
+```flutter run```
 
-```bash
-flutter run
-```
-
-### **Example Configuration**
-
-## Example `.fterm_config.json` File
+### Example `.fterm_config.json` File
 
 ```json
 [
@@ -40,11 +35,17 @@ flutter run
 
 ### **Configuration Fields**
 
-## Configuration File Fields
-
 - **`name`**: The name of the configuration.
 - **`mode`**: The mode to run your app in (`debug`, `release`, or `profile`).
 - **`flavor`**: The flavor to use (equivalent to `--flavor`).
 - **`target`**: The target file to run (`-t` or `--target`). Defaults to `main.dart` if not specified.
 - **`dart_define_from_file`**: Defines environment variables from a file (equivalent to `--dart-define-from-file`).
 
+
+### **Running Commands**
+
+#### **flutterterm emulators**
+```flutterterm emulators```
+
+####  **flutterterm run**
+```flutterterm run```
