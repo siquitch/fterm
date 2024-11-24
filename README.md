@@ -14,13 +14,10 @@ If you choose not to use a configuration file, Flutterterm will act as if it is 
 
 ```bash
 flutter run
-
-
----
+```
 
 ### **Example Configuration**
 
-```markdown
 ## Example `.fterm_config.json` File
 
 ```json
@@ -39,13 +36,10 @@ flutter run
         "target": "main.dart"
     }
 ]
-
-
----
+```
 
 ### **Configuration Fields**
 
-```markdown
 ## Configuration File Fields
 
 - **`name`**: The name of the configuration.
