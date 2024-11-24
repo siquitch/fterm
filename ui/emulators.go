@@ -9,14 +9,14 @@ import (
 
 type EmulatorModel struct {
 	devices          []utils.Device
-	cursor           int
+	cursor           utils.Cursor
 	SelectedEmulator utils.Device
 }
 
 func InitialEmulatorModel(devices []utils.Device) EmulatorModel {
 	return EmulatorModel{
 		devices: devices,
-		cursor:  0,
+		cursor:  utils.NewCursor(0, len(devices)),
 	}
 }
 
@@ -31,15 +31,11 @@ func (m EmulatorModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "ctrl+c", "q":
 			return m, tea.Quit
 		case "up", "k":
-			if m.cursor > 0 {
-				m.cursor--
-			}
+			m.cursor.Previous()
 		case "down", "j":
-			if m.cursor < len(m.devices)-1 {
-				m.cursor++
-			}
+			m.cursor.Next()
 		case "enter":
-			m.SelectedEmulator = m.devices[m.cursor]
+			m.SelectedEmulator = m.devices[m.cursor.Index()]
 			return m, tea.Quit
 		}
 	}
@@ -54,7 +50,7 @@ func (m EmulatorModel) View() string {
 
 	for i, device := range m.devices {
 		cursor := " "
-		if m.cursor == i {
+		if m.cursor.Index() == i {
 			cursor = ">"
 		}
 		s += fmt.Sprintf("%s %s\n", cursor, device.Name)

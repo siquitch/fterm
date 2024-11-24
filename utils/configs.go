@@ -2,12 +2,21 @@ package utils
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"os"
 )
 
-const ConfigPath = ".fterm_config.json"
+const (
+	ConfigPath  = ".fterm_config.json"
+	mainPath    = "main.dart"
+	mainLibPath = "lib/main.dart"
+)
+
+var mainPaths = []string{
+	mainPath, mainLibPath,
+}
 
 type FlutterConfig struct {
 	Name               string `json:"name"`
@@ -23,16 +32,20 @@ func (config FlutterConfig) ToString() string {
 	s += fmt.Sprintf("Mode: %s\n", config.Mode)
 	s += fmt.Sprintf("Flavor: %s\n", config.Flavor)
 	s += fmt.Sprintf("Target: %s\n", config.Target)
-    s += fmt.Sprintf("Dart define file: %s\n", config.DartDefineFromFile)
+	s += fmt.Sprintf("Dart define file: %s\n", config.DartDefineFromFile)
 	return s
 }
 
-func DefaultConfig() FlutterConfig {
+func DefaultConfig() (FlutterConfig, error) {
+	target, err := findDefabltTarget()
+	if err != nil {
+		return FlutterConfig{}, err
+	}
 	return FlutterConfig{
 		Name:   "Default",
 		Mode:   "debug",
-		Target: "main.dart",
-	}
+		Target: target,
+	}, nil
 }
 
 func GetConfigs() ([]FlutterConfig, error) {
@@ -66,4 +79,15 @@ func GetConfigs() ([]FlutterConfig, error) {
 	}
 
 	return configs, nil
+}
+
+// Looks for main.dart files in default config
+func findDefabltTarget() (string, error) {
+	for _, path := range mainPaths {
+		if _, err := os.Stat(path); err == nil {
+			return path, nil
+		}
+	}
+	err := errors.New("main.dart file not found")
+	return "", err
 }

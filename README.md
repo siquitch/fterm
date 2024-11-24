@@ -22,7 +22,7 @@ If you choose not to use a configuration file, Flutterterm will act as if it is 
         "mode": "debug",
         "flavor": "dev",
         "target": "main.dart",
-        "dart_define_from_file": "test.json"
+        "dart_define_from_file": "file.json"
     },
     {
         "name": "Prod",
@@ -45,11 +45,13 @@ If you choose not to use a configuration file, Flutterterm will act as if it is 
 ### **Running Commands**
 
 #### **flutterterm emulators**
+This command allows you to start an existing emulator or create a new one
 ```bash
 flutterterm emulators
 ```
 
 ####  **flutterterm run**
+This command wraps the ```flutter run``` command
 ```bash
 flutterterm run
 ```

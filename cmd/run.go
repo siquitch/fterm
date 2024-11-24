@@ -27,12 +27,13 @@ var runCmd = &cobra.Command{
 			return
 		}
 
-		fmt.Println("Flutter directory detected. Getting devices")
+		utils.PrintInfo(fmt.Sprintf("Flutter directory detected. Getting devices\n"))
 
 		devices, err := utils.GetDevices()
 
 		if err != nil {
-			fmt.Printf("There was an error getting devices: %s", err)
+			e := fmt.Sprintf("There was an error getting devices: %s\n", err)
+			utils.PrintError(e)
 			return
 		}
 
@@ -43,7 +44,12 @@ var runCmd = &cobra.Command{
 			utils.PrintInfo("No configs found, using default\n\n")
 			help := fmt.Sprintf("Try creating a \"%s\" file or adding a config to an already created one", utils.ConfigPath)
 			utils.PrintHelp(help)
-			configs = append(configs, utils.DefaultConfig())
+			defaultConfig, err := utils.DefaultConfig()
+			if err != nil {
+				utils.PrintError(err.Error())
+				return
+			}
+			configs = append(configs, defaultConfig)
 		}
 
 		p := tea.NewProgram(ui.InitialRunModel(devices, configs))
@@ -59,6 +65,7 @@ var runCmd = &cobra.Command{
 
 		if !ok {
 			fmt.Println("Could not cast tea model to run model")
+			return
 		}
 
 		if !runModel.IsComplete() {
@@ -81,9 +88,9 @@ func setupAndRun(m ui.RunModel) {
 	if config.Target != "" {
 		args = append(args, "-t", config.Target)
 	}
-    if config.Flavor != "" {
-        args = append(args, "--flavor", config.Flavor)
-    }
+	if config.Flavor != "" {
+		args = append(args, "--flavor", config.Flavor)
+	}
 	if config.DartDefineFromFile != "" {
 		args = append(args, "--dart-define-from-file", config.DartDefineFromFile)
 	}
@@ -98,7 +105,7 @@ func setupAndRun(m ui.RunModel) {
 	err := cmd.Start()
 
 	if err != nil {
-		fmt.Println(err)
+		utils.PrintError(err.Error())
 		return
 	}
 
@@ -124,14 +131,4 @@ func assertRootPath() bool {
 
 func init() {
 	rootCmd.AddCommand(runCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// runCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// runCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
