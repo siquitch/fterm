@@ -15,3 +15,7 @@ func PrintHelp(s string) {
 func PrintInfo(s string) {
 	color.Blue(s)
 }
+
+func PrintSuccess(s string) {
+	color.Green(s)
+}
