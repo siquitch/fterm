@@ -2,11 +2,28 @@
 
 **Flutterterm** is a convenient CLI wrapper for running Flutter commands.
 
+## Inspiration
+
+I don't use VsCode or Android Studio, but rather neovim :D
+
+The current best tool, flutter-tools.nvim (amazing) works really well, but I 
+prefer to just use the cli to run my flutter project.
+
+flutter-tools.nvim has a nice way to make pre-set configurations, but is limited
+to running inside neovim, which I have found to be inconvenient. For example, 
+logs are not colored, and if neovim needs to be restarted, the app must be killed.
+
+This tool aims to add functionality directly to the flutter cli tool by creating
+a more interactive way to use it. If you've ever needed to manage different run configurations, 
+then this tool can help. Simply add a configuration file to the root of your flutter project, and
+quickly run multiple project configurations.
+
 ## Usage
 
 A configuration file is **not required**, but it is recommended to get the most out of this tool.  
 
-To set up a configuration file, create a `.fterm_config.json` file in the root directory of your Flutter project. Flutterterm will look for this file when you run commands.
+To set up a configuration file, create a `.fterm_config.json` file in the root directory of your Flutter project. 
+Flutterterm will look for this file when you run commands.
 
 ### Without a Configuration File
 
@@ -44,8 +61,7 @@ If you choose not to use a configuration file, Flutterterm will act as if it is 
 
 ### **Running Commands**
 
-#### **flutterterm emulators**
-This command allows you to start an existing emulator or create a new one
+### **flutterterm emulators**
 ```bash
 // Start an existing emulator
 flutterterm emulators
