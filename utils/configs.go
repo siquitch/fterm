@@ -14,6 +14,10 @@ const (
 	mainLibPath = "lib/main.dart"
 )
 
+var FlutterModes = []string{
+	"debug", "profile", "release",
+}
+
 var mainPaths = []string{
 	mainPath, mainLibPath,
 }
