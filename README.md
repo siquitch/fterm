@@ -47,7 +47,11 @@ If you choose not to use a configuration file, Flutterterm will act as if it is 
 #### **flutterterm emulators**
 This command allows you to start an existing emulator or create a new one
 ```bash
+// Start an existing emulator
 flutterterm emulators
+
+// Create a new emulator
+flutterterm emulators create
 ```
 
 ####  **flutterterm run**
