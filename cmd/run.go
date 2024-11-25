@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/spf13/cobra"
@@ -91,6 +92,12 @@ func setupAndRun(m ui.RunModel) {
 	if config.Flavor != "" {
 		args = append(args, "--flavor", config.Flavor)
 	}
+	if config.Mode != "" {
+		if !assertFlutterMode(config.Mode) {
+			utils.PrintError(fmt.Sprintf("Invalid flutter mode: %s", config.Mode))
+			return
+		}
+	}
 	if config.DartDefineFromFile != "" {
 		args = append(args, "--dart-define-from-file", config.DartDefineFromFile)
 	}
@@ -113,7 +120,7 @@ func setupAndRun(m ui.RunModel) {
 		s := fmt.Sprintf("Flutterterm finished with error: %s", err)
 		utils.PrintError(s)
 	} else {
-		fmt.Println("Flutterterm finished successfully")
+		utils.PrintSuccess("Flutterterm finished successfully")
 	}
 }
 
@@ -127,6 +134,17 @@ func assertRootPath() bool {
 	}
 
 	return true
+}
+
+// Verify proper mode being used
+func assertFlutterMode(m string) bool {
+	m = strings.ToLower(m)
+	for mode := range utils.FlutterModes {
+		if mode == mode {
+			return true
+		}
+	}
+	return false
 }
 
 func init() {
