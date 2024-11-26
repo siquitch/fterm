@@ -65,13 +65,19 @@ If you choose not to use a configuration file, Flutterterm will act as if it is 
 ```bash
 // Start an existing emulator
 flutterterm emulators
+```
+![flutterterm emulators](.readme_assets/flutterterm_emulators.gif)
 
+```bash
 // Create a new emulator
 flutterterm emulators create
 ```
+
+![flutterterm emulators create](.readme_assets/flutterterm_emulators_create.gif)
 
 ####  **flutterterm run**
 This command wraps the ```flutter run``` command
 ```bash
 flutterterm run
 ```
+![flutterterm run](.readme_assets/flutterterm_run.gif)
