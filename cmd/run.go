@@ -51,7 +51,7 @@ var runCmd = &cobra.Command{
 		model, err := p.Run()
 
 		if err != nil {
-			utils.PrintError(fmt.Sprintf("Error %v", err))
+			utils.PrintError(fmt.Sprintf("Error %s", err.Error()))
 			return
 		}
 
