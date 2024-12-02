@@ -2,7 +2,6 @@ package utils
 
 import (
 	"encoding/json"
-	"os/exec"
 	"strings"
 )
 
@@ -11,11 +10,24 @@ type Device struct {
 	ID   string `json:"id"`
 }
 
+func ParseDevices(bytes []byte) ([]Device, error) {
+	var devices []Device
+	err := json.Unmarshal(bytes, &devices)
+
+	if err != nil {
+		return devices, err
+	}
+
+	return devices, nil
+}
+
 // Returns a list of available devices to use
+//
+// Deprecated: Use ParseDevices
 func GetDevices() ([]Device, error) {
 	var devices []Device
 
-	cmd := exec.Command("flutter", "devices", "--machine")
+	cmd := FlutterDevices()
 	output, err := cmd.Output()
 	if err != nil {
 		PrintError(err.Error())
@@ -31,20 +43,10 @@ func GetDevices() ([]Device, error) {
 	return devices, nil
 }
 
-// Return a list of available flutter emulators
-func GetEmulators() ([]Device, error) {
-	PrintInfo("Getting emulators\n\n")
+func ParseEmulators(bytes []byte) ([]Device, error) {
 	var devices []Device
 
-	cmd := exec.Command("flutter", "emulators")
-
-	output, err := cmd.Output()
-
-	if err != nil {
-		return devices, err
-	}
-
-	lines := strings.Split(string(output), "\n")
+	lines := strings.Split(string(bytes), "\n")
 
 	for i, line := range lines {
 		if line == "" {

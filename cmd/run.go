@@ -8,7 +8,6 @@ import (
 	"flutterterm/utils"
 	"fmt"
 	"os"
-	"os/exec"
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -30,14 +29,6 @@ var runCmd = &cobra.Command{
 
 		utils.PrintInfo(fmt.Sprintf("Flutter directory detected. Getting devices\n"))
 
-		devices, err := utils.GetDevices()
-
-		if err != nil {
-			e := fmt.Sprintf("There was an error getting devices: %s\n", err)
-			utils.PrintError(e)
-			return
-		}
-
 		configs, err := utils.GetConfigs()
 
 		// Add a default run config if none exist
@@ -51,23 +42,20 @@ var runCmd = &cobra.Command{
 				return
 			}
 			configs = append(configs, defaultConfig)
+		} else {
+			utils.PrintSuccess(fmt.Sprintf("%d configs found\n\n", len(configs)))
 		}
 
-		p := tea.NewProgram(ui.InitialRunModel(devices, configs))
+		p := tea.NewProgram(ui.InitialRunModel(configs))
 
 		model, err := p.Run()
 
 		if err != nil {
-			fmt.Printf("Error %v", err)
-			os.Exit(1)
-		}
-
-		runModel, ok := model.(ui.RunModel)
-
-		if !ok {
-			fmt.Println("Could not cast tea model to run model")
+			utils.PrintError(fmt.Sprintf("Error %v", err))
 			return
 		}
+
+		runModel, _ := model.(ui.RunModel)
 
 		if !runModel.IsComplete() {
 			return
@@ -102,7 +90,7 @@ func setupAndRun(m ui.RunModel) {
 		args = append(args, "--dart-define-from-file", config.DartDefineFromFile)
 	}
 
-	cmd := exec.Command("flutter", args...)
+	cmd := utils.FlutterRun(args)
 
 	// For color and input handling
 	cmd.Stdout = os.Stdout

@@ -1,11 +1,8 @@
 package ui
 
 import (
-	// "github.com/charmbracelet/bubbles/cursor"
 	"fmt"
-
 	"github.com/charmbracelet/bubbles/textarea"
-	// "github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 )
 

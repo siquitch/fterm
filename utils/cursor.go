@@ -5,6 +5,8 @@ type Cursor struct {
 	length int
 }
 
+const CursorChar = ">"
+
 func NewCursor(index, length int) Cursor {
 	return Cursor{
 		index:  index,

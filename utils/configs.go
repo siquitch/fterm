@@ -53,7 +53,6 @@ func DefaultConfig() (FlutterConfig, error) {
 }
 
 func GetConfigs() ([]FlutterConfig, error) {
-	PrintInfo("Fetching configs\n\n")
 	var configs []FlutterConfig
 
 	config_file, err := os.Open(ConfigPath)
