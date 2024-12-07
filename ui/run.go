@@ -11,8 +11,8 @@ import (
 type RunModel struct {
 	devices         []utils.Device
 	configs         []utils.FlutterConfig
-	cursor          utils.Cursor
-	runInfo         map[devicestage]bool
+	cursor          utils.Navigator
+	stage           devicestage
 	Selected_device utils.Device
 	Selected_config utils.FlutterConfig
 	state           state
@@ -24,12 +24,13 @@ type devicestage int
 const (
 	device devicestage = iota
 	config
+	_length
 )
 
 func InitialRunModel(configs []utils.FlutterConfig) RunModel {
 	return RunModel{
 		configs: configs,
-		runInfo: make(map[devicestage]bool),
+		stage:   device,
 		state:   getting,
 		spinner: getSpinner(),
 	}
@@ -46,6 +47,9 @@ func (m RunModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		switch msg.String() {
 
+		case "?":
+			m.cursor.ToggleHelp()
+
 		case "ctrl+c", "q":
 			return m, tea.Quit
 
@@ -55,10 +59,14 @@ func (m RunModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "down", "j":
 			m.cursor.Next()
 
+		case "left", "h":
+			m = m.back()
+
 		case "enter":
 			m, cmd := m.doNextThing()
 			return m, cmd
 		}
+
 	case devicesComplete:
 		m.devices = msg
 		m.cursor = utils.NewCursor(0, len(m.devices))
@@ -73,15 +81,25 @@ func (m RunModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
+// Go back in the process
+func (m RunModel) back() RunModel {
+	if m.stage == device {
+		return m
+	}
+	m.stage = device
+	return m
+}
+
+// Go to the next part of the process
 func (m RunModel) doNextThing() (RunModel, tea.Cmd) {
 	var cmd tea.Cmd
-	if _, exists := m.runInfo[device]; !exists {
-		m.runInfo[device] = true
+	switch m.stage {
+	case device:
 		m.Selected_device = m.devices[m.cursor.Index()]
-		m.cursor = utils.NewCursor(0, len(m.configs))
+		m.cursor.Reset(len(m.configs))
+		m.stage = config
 		cmd = nil
-	} else if _, exists := m.runInfo[config]; !exists {
-		m.runInfo[config] = true
+	case config:
 		m.Selected_config = m.configs[m.cursor.Index()]
 		cmd = tea.Quit
 	}
@@ -94,22 +112,25 @@ func (m RunModel) IsComplete() bool {
 }
 
 func (m RunModel) View() string {
-
+	var s string = ""
+	if m.cursor.ShouldShowHelp() {
+		s += controlsHelpMessage
+	}
 	switch m.state {
 	case view:
-		var s string
-		if _, exists := m.runInfo[device]; !exists {
-			s = "Select a device\n\n"
+		switch m.stage {
+		case device:
+			s += "Select a device\n\n"
 
-			for i, choice := range m.devices {
+			for i, device := range m.devices {
 				cursor := " "
 				if m.cursor.Index() == i {
 					cursor = utils.CursorChar
 				}
-				s += fmt.Sprintf("%s %s\n", cursor, choice.Name)
+				s += fmt.Sprintf("%s %s - %s\n", cursor, device.Name, device.ID)
 			}
-		} else if _, exists := m.runInfo[config]; !exists {
-			s = "Select a config\n\n"
+		case config:
+			s += "Select a config\n\n"
 			for i, config := range m.configs {
 				cursor := " "
 				if m.cursor.Index() == i {
@@ -117,12 +138,10 @@ func (m RunModel) View() string {
 				}
 				s += fmt.Sprintf("%s %s\n", cursor, config.Name)
 			}
-		} else {
-			s += fmt.Sprintf("Selected device: %s\n", m.Selected_device.Name)
-			s += m.Selected_config.ToString()
 		}
 
-		s += "\nPress q to quit.\n"
+		s += fmt.Sprintf("\n%d/%d", m.stage+1, _length)
+		s += quitAndHelpMessage
 		return s
 	case getting:
 		spinner := m.spinner.View()

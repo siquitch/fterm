@@ -10,7 +10,7 @@ import (
 
 type EmulatorModel struct {
 	devices          []utils.Device
-	cursor           utils.Cursor
+	cursor           utils.Navigator
 	selectedEmulator utils.Device
 	state            state
 	spinner          spinner.Model
@@ -34,6 +34,8 @@ func (m EmulatorModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
+		case "?":
+			m.cursor.ToggleHelp()
 		case "ctrl+c", "q":
 			return m, tea.Quit
 		case "up", "k":
@@ -67,11 +69,14 @@ func (m EmulatorModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m EmulatorModel) View() string {
+	var s string = ""
+	if m.cursor.ShouldShowHelp() {
+		s += controlsHelpMessage
+	}
 	switch m.state {
 	case view:
-		var s string
 
-		s = "Select an emulator\n\n"
+		s += "Select an emulator\n\n"
 
 		for i, device := range m.devices {
 			cursor := " "
@@ -81,7 +86,9 @@ func (m EmulatorModel) View() string {
 			s += fmt.Sprintf("%s %s\n", cursor, device.Name)
 		}
 
-		s += "\nPress q to quit\n"
+		s += "\n1/1\n\n"
+
+		s += quitAndHelpMessage
 		return s
 	case getting:
 		spinner := m.spinner.View()

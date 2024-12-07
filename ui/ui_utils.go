@@ -29,3 +29,6 @@ func getSpinner() spinner.Model {
 	s.Spinner = spinner.Dot
 	return s
 }
+
+const quitAndHelpMessage = "\nPress q to quit, or ? for help\n"
+const controlsHelpMessage = "Controls\nj, down: go down\nk, up: go up\nh, left: go back (if applicable)\nenter: submit\n\n"
