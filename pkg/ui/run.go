@@ -1,7 +1,7 @@
 package ui
 
 import (
-	"flutterterm/utils"
+	"flutterterm/pkg/utils"
 	"fmt"
 
 	"github.com/charmbracelet/bubbles/spinner"
@@ -10,11 +10,11 @@ import (
 
 type RunModel struct {
 	devices         []utils.Device
-	configs         []utils.FlutterConfig
+	configs         []utils.FlutterRunConfig
 	cursor          utils.Navigator
 	stage           devicestage
 	Selected_device utils.Device
-	Selected_config utils.FlutterConfig
+	Selected_config utils.FlutterRunConfig
 	state           state
 	spinner         spinner.Model
 }
@@ -27,7 +27,7 @@ const (
 	_length
 )
 
-func InitialRunModel(configs []utils.FlutterConfig) RunModel {
+func InitialRunModel(configs []utils.FlutterRunConfig) RunModel {
 	return RunModel{
 		configs: configs,
 		stage:   device,

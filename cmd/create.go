@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	"flutterterm/ui"
-	"flutterterm/utils"
+	"flutterterm/pkg/ui"
+	"flutterterm/pkg/utils"
 	"fmt"
 	"os/exec"
 

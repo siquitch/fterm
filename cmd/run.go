@@ -1,11 +1,10 @@
 package cmd
 
 import (
-	"flutterterm/ui"
-	"flutterterm/utils"
+	"flutterterm/pkg/ui"
+	"flutterterm/pkg/utils"
 	"fmt"
 	"os"
-	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/spf13/cobra"
@@ -77,14 +76,15 @@ func setupAndRun(m ui.RunModel) {
 	if config.Flavor != "" {
 		args = append(args, "--flavor", config.Flavor)
 	}
-	if config.Mode != "" {
-		if !assertFlutterMode(config.Mode) {
-			utils.PrintError(fmt.Sprintf("Invalid flutter mode: %s", config.Mode))
-			return
-		}
-	}
 	if config.DartDefineFromFile != "" {
 		args = append(args, "--dart-define-from-file", config.DartDefineFromFile)
+	}
+
+	err := config.AssertConfig()
+
+	if err != nil {
+		e := fmt.Sprintf("Invalid configuration: %s", err)
+		utils.PrintError(e)
 	}
 
 	cmd := utils.FlutterRun(args)
@@ -94,7 +94,7 @@ func setupAndRun(m ui.RunModel) {
 	cmd.Stderr = os.Stderr
 	cmd.Stdin = os.Stdin
 
-	err := cmd.Start()
+	err = cmd.Start()
 
 	if err != nil {
 		utils.PrintError(err.Error())
@@ -119,17 +119,6 @@ func assertRootPath() bool {
 	}
 
 	return true
-}
-
-// Verify proper mode being used
-func assertFlutterMode(m string) bool {
-	m = strings.ToLower(m)
-	for mode := range utils.FlutterModes {
-		if mode == mode {
-			return true
-		}
-	}
-	return false
 }
 
 func init() {

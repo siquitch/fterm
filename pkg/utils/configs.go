@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 )
 
 const (
@@ -14,15 +15,17 @@ const (
 	mainLibPath = "lib/main.dart"
 )
 
-var FlutterModes = []string{
+// --mode
+var flutterModes = []string{
 	"debug", "profile", "release",
 }
 
+// main.dart paths to look for
 var mainPaths = []string{
 	mainPath, mainLibPath,
 }
 
-type FlutterConfig struct {
+type FlutterRunConfig struct {
 	Name               string `json:"name"`
 	Mode               string `json:"mode"`
 	Flavor             string `json:"flavor"`
@@ -30,7 +33,31 @@ type FlutterConfig struct {
 	DartDefineFromFile string `json:"dart_define_from_file"`
 }
 
-func (config FlutterConfig) ToString() string {
+// Makes sure config is properly configured
+func (config FlutterRunConfig) AssertConfig() error {
+	if !assertFlutterMode(config.Mode) {
+		e := fmt.Sprintf("Invalid mode: %s", config.Mode)
+		return errors.New(e)
+	}
+	return nil
+}
+
+// Verify proper mode being used
+func assertFlutterMode(m string) bool {
+	// Empty mode is ok
+	if m == "" {
+		return true
+	}
+	m = strings.ToLower(m)
+	for mode := range flutterModes {
+		if mode == mode {
+			return true
+		}
+	}
+	return false
+}
+
+func (config FlutterRunConfig) ToString() string {
 	var s string
 	s = fmt.Sprintf("Config: %s\n", config.Name)
 	s += fmt.Sprintf("Mode: %s\n", config.Mode)
@@ -40,20 +67,20 @@ func (config FlutterConfig) ToString() string {
 	return s
 }
 
-func DefaultConfig() (FlutterConfig, error) {
-	target, err := findDefabltTarget()
+func DefaultConfig() (FlutterRunConfig, error) {
+	target, err := findDefaultTarget()
 	if err != nil {
-		return FlutterConfig{}, err
+		return FlutterRunConfig{}, err
 	}
-	return FlutterConfig{
+	return FlutterRunConfig{
 		Name:   "Default",
 		Mode:   "debug",
 		Target: target,
 	}, nil
 }
 
-func GetConfigs() ([]FlutterConfig, error) {
-	var configs []FlutterConfig
+func GetConfigs() ([]FlutterRunConfig, error) {
+	var configs []FlutterRunConfig
 
 	config_file, err := os.Open(ConfigPath)
 
@@ -85,7 +112,7 @@ func GetConfigs() ([]FlutterConfig, error) {
 }
 
 // Looks for main.dart files in default config
-func findDefabltTarget() (string, error) {
+func findDefaultTarget() (string, error) {
 	for _, path := range mainPaths {
 		if _, err := os.Stat(path); err == nil {
 			return path, nil

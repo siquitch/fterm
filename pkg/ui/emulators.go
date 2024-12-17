@@ -1,7 +1,7 @@
 package ui
 
 import (
-	"flutterterm/utils"
+	"flutterterm/pkg/utils"
 	"fmt"
 
 	"github.com/charmbracelet/bubbles/spinner"
