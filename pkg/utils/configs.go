@@ -49,8 +49,8 @@ func assertFlutterMode(m string) bool {
 		return true
 	}
 	m = strings.ToLower(m)
-	for mode := range flutterModes {
-		if mode == mode {
+	for _, mode := range flutterModes {
+		if mode == m {
 			return true
 		}
 	}
@@ -102,6 +102,7 @@ func GetConfigs() ([]FlutterRunConfig, error) {
 
 	if err != nil {
 		fmt.Println(err)
+		return configs, err
 	}
 
 	for i := 0; i < len(configs); i++ {

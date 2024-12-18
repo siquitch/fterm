@@ -21,28 +21,6 @@ func ParseDevices(bytes []byte) ([]Device, error) {
 	return devices, nil
 }
 
-// Returns a list of available devices to use
-//
-// Deprecated: Use ParseDevices
-func GetDevices() ([]Device, error) {
-	var devices []Device
-
-	cmd := FlutterDevices()
-	output, err := cmd.Output()
-	if err != nil {
-		PrintError(err.Error())
-		return devices, err
-	}
-
-	err = json.Unmarshal(output, &devices)
-
-	if err != nil {
-		return devices, err
-	}
-
-	return devices, nil
-}
-
 func ParseEmulators(bytes []byte) ([]Device, error) {
 	var devices []Device
 

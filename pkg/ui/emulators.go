@@ -56,7 +56,7 @@ func (m EmulatorModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case devicesComplete:
 		m.state = view
 		m.devices = msg
-		m.cursor = utils.NewCursor(0, len(m.devices))
+		m.cursor = utils.NewNavigator(0, len(m.devices))
 		return m, nil
 	case runningComplete:
 		return m, tea.Quit

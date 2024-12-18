@@ -69,7 +69,7 @@ func (m RunModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case devicesComplete:
 		m.devices = msg
-		m.cursor = utils.NewCursor(0, len(m.devices))
+		m.cursor = utils.NewNavigator(0, len(m.devices))
 		m.state = view
 		return m, nil
 	case spinner.TickMsg:

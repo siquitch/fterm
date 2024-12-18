@@ -9,7 +9,7 @@ type Navigator struct {
 
 const CursorChar = ">"
 
-func NewCursor(index, length int) Navigator {
+func NewNavigator(index, length int) Navigator {
 	return Navigator{
 		index:    index,
 		length:   length,
