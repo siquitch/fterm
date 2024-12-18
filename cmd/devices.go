@@ -18,9 +18,16 @@ var devicesCmd = &cobra.Command{
 }
 
 func execute() {
-	devices, err := utils.GetDevices()
+	cmd := utils.FlutterDevices()
+	output, err := cmd.Output()
 	if err != nil {
-		fmt.Println(err)
+		utils.PrintError(err.Error())
+		return
+	}
+
+	devices, err := utils.ParseDevices(output)
+	if err != nil {
+		utils.PrintError(err.Error())
 		return
 	}
 

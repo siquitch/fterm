@@ -69,22 +69,27 @@ func setupAndRun(m ui.RunModel) {
 	device := m.Selected_device.ID
 	config := m.Selected_config
 
+	err := config.AssertConfig()
+
+	if err != nil {
+		e := fmt.Sprintf("Invalid configuration: %s", err)
+		utils.PrintError(e)
+		return
+	}
+
 	args := []string{"run", "-d", device}
 	if config.Target != "" {
 		args = append(args, "-t", config.Target)
+	}
+	if config.Mode != "" {
+        arg := fmt.Sprintf("--%s", config.Mode)
+		args = append(args, arg)
 	}
 	if config.Flavor != "" {
 		args = append(args, "--flavor", config.Flavor)
 	}
 	if config.DartDefineFromFile != "" {
 		args = append(args, "--dart-define-from-file", config.DartDefineFromFile)
-	}
-
-	err := config.AssertConfig()
-
-	if err != nil {
-		e := fmt.Sprintf("Invalid configuration: %s", err)
-		utils.PrintError(e)
 	}
 
 	cmd := utils.FlutterRun(args)
