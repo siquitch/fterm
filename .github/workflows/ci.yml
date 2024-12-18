@@ -3,6 +3,9 @@ name: Continuous Integration
 on:
   push:
     branches: [ "master" ]
+    tags:
+      # Releases are prefixed with v
+      - v*
   pull_request:
     branches: [ "master" ]
 
