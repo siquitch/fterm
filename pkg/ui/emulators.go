@@ -90,8 +90,6 @@ func (m EmulatorModel) View() string {
 		// 	s += fmt.Sprintf("%s %s\n", cursor, device.Name)
 		// }
 
-		m.table.SetCursor(m.cursor.Index())
-
 		s += m.table.View()
 
 		s += "\n"

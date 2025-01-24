@@ -67,6 +67,7 @@ func (m RunModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if err == nil {
 				m.cursor = utils.NewNavigator(0, len(m.devices))
 			}
+			return m, nil
 		case "enter":
 			m, cmd := m.doNextThing()
 			return m, cmd
