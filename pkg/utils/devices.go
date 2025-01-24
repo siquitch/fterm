@@ -3,6 +3,9 @@ package utils
 import (
 	"encoding/json"
 	"strings"
+
+	"github.com/charmbracelet/bubbles/table"
+	"github.com/charmbracelet/lipgloss"
 )
 
 type Device struct {
@@ -59,4 +62,31 @@ func ParseEmulators(bytes []byte) ([]Device, error) {
 	devices = devices[0:]
 
 	return devices, nil
+}
+
+func GetDeviceTable(devices []Device) table.Model {
+	c := []table.Column{
+		{Title: "Name", Width: 20},
+		{Title: "ID", Width: 20},
+	}
+
+	var r []table.Row
+
+	for _, device := range devices {
+		row := table.Row{
+			device.Name,
+			device.ID,
+		}
+
+		r = append(r, row)
+	}
+
+	return table.New(
+		table.WithColumns(c),
+		table.WithRows(r),
+		table.WithFocused(true),
+		table.WithHeight(len(devices)+1),
+		table.WithStyles(table.Styles{Header: lipgloss.NewStyle().Padding(1, 0),
+			Selected: lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("212"))}),
+	)
 }

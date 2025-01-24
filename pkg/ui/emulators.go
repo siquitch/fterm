@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/charmbracelet/bubbles/spinner"
+	"github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -14,8 +15,8 @@ type EmulatorModel struct {
 	selectedEmulator utils.Device
 	state            state
 	spinner          spinner.Model
-	// Whether to cold start the selectedEmulator
-	isCold bool
+	isCold           bool // Cold start
+	table            table.Model
 }
 
 func InitialEmulatorModel(isCold bool) EmulatorModel {
@@ -40,9 +41,11 @@ func (m EmulatorModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		case "up", "k":
 			m.cursor.Previous()
+			m.table.SetCursor(m.cursor.Index())
 			return m, nil
 		case "down", "j":
 			m.cursor.Next()
+			m.table.SetCursor(m.cursor.Index())
 			return m, nil
 		case "enter":
 			m.selectedEmulator = m.devices[m.cursor.Index()]
@@ -57,6 +60,7 @@ func (m EmulatorModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.state = view
 		m.devices = msg
 		m.cursor = utils.NewNavigator(0, len(m.devices))
+		m.table = utils.GetDeviceTable(m.devices)
 		return m, nil
 	case runningComplete:
 		return m, tea.Quit
@@ -76,15 +80,21 @@ func (m EmulatorModel) View() string {
 	switch m.state {
 	case view:
 
-		s += "Select an emulator\n\n"
+		// s += "Select an emulator\n\n"
+		//
+		// for i, device := range m.devices {
+		// 	cursor := " "
+		// 	if m.cursor.Index() == i {
+		// 		cursor = utils.CursorChar
+		// 	}
+		// 	s += fmt.Sprintf("%s %s\n", cursor, device.Name)
+		// }
 
-		for i, device := range m.devices {
-			cursor := " "
-			if m.cursor.Index() == i {
-				cursor = utils.CursorChar
-			}
-			s += fmt.Sprintf("%s %s\n", cursor, device.Name)
-		}
+		m.table.SetCursor(m.cursor.Index())
+
+		s += m.table.View()
+
+		s += "\n"
 
 		s += "\n1/1\n\n"
 

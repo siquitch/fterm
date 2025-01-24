@@ -1,10 +1,12 @@
 package ui
 
 import (
+	"errors"
 	"flutterterm/pkg/utils"
 	"fmt"
 
 	"github.com/charmbracelet/bubbles/spinner"
+	"github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -17,6 +19,7 @@ type RunModel struct {
 	Selected_config utils.FlutterRunConfig
 	state           state
 	spinner         spinner.Model
+	table           table.Model
 }
 
 type devicestage int
@@ -55,22 +58,27 @@ func (m RunModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case "up", "k":
 			m.cursor.Previous()
-
+			m.table.SetCursor(m.cursor.Index())
 		case "down", "j":
 			m.cursor.Next()
-
+			m.table.SetCursor(m.cursor.Index())
 		case "left", "h":
-			m = m.back()
-
+			m, err := m.back()
+			if err == nil {
+				m.cursor = utils.NewNavigator(0, len(m.devices))
+			}
 		case "enter":
 			m, cmd := m.doNextThing()
 			return m, cmd
 		}
+		return m, nil
 
 	case devicesComplete:
 		m.devices = msg
 		m.cursor = utils.NewNavigator(0, len(m.devices))
 		m.state = view
+		m.table = utils.GetDeviceTable(m.devices)
+		m.table.SetCursor(m.cursor.Index())
 		return m, nil
 	case spinner.TickMsg:
 		var cmd tea.Cmd
@@ -82,12 +90,12 @@ func (m RunModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 // Go back in the process
-func (m RunModel) back() RunModel {
+func (m RunModel) back() (RunModel, error) {
 	if m.stage == device {
-		return m
+		return m, errors.New("Couldn't go back")
 	}
 	m.stage = device
-	return m
+	return m, nil
 }
 
 // Go to the next part of the process
@@ -120,15 +128,18 @@ func (m RunModel) View() string {
 	case view:
 		switch m.stage {
 		case device:
-			s += "Select a device\n\n"
+			// s += "Select a device\n\n"
+			//
+			// for i, device := range m.devices {
+			// 	cursor := " "
+			// 	if m.cursor.Index() == i {
+			// 		cursor = utils.CursorChar
+			// 	}
+			// 	s += fmt.Sprintf("%s %s - %s\n", cursor, device.Name, device.ID)
+			// }
 
-			for i, device := range m.devices {
-				cursor := " "
-				if m.cursor.Index() == i {
-					cursor = utils.CursorChar
-				}
-				s += fmt.Sprintf("%s %s - %s\n", cursor, device.Name, device.ID)
-			}
+			s += m.table.View()
+			s += "\n"
 		case config:
 			s += "Select a config\n\n"
 			for i, config := range m.configs {
