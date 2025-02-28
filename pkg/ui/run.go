@@ -1,72 +1,91 @@
 package ui
 
 import (
-	"errors"
 	"flutterterm/pkg/utils"
 	"fmt"
 
 	"github.com/charmbracelet/bubbles/spinner"
-	"github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-type RunModel struct {
-	devices         []utils.Device
-	configs         []utils.FlutterRunConfig
-	cursor          utils.Navigator
-	stage           devicestage
-	Selected_device utils.Device
-	Selected_config utils.FlutterRunConfig
-	state           state
-	spinner         spinner.Model
-	table           table.Model
+type SelectionManager struct {
+	SelectedDevice utils.Device
+	SelectedConfig utils.FlutterRunConfig
 }
 
-type devicestage int
+type TableManager map[deviceStage]utils.TableModel
+
+type RunModel struct {
+	devices  []utils.Device
+	config   utils.Config
+	showHelp bool
+
+	stage deviceStage
+	state state
+
+	selectionManager SelectionManager
+	tableManager     TableManager
+
+	spinner spinner.Model
+}
+
+type deviceStage int
 
 const (
-	device devicestage = iota
-	config
+	selectDevice deviceStage = iota
+	selectConfig
 	_length
 )
 
-func InitialRunModel(configs []utils.FlutterRunConfig) RunModel {
-	return RunModel{
-		configs: configs,
-		stage:   device,
-		state:   getting,
-		spinner: getSpinner(),
+type Model = tea.Model
+type Cmd = tea.Cmd
+type Msg = tea.Msg
+type KeyMsg = tea.KeyMsg
+
+func InitialRunModel(config utils.Config) RunModel {
+	m := RunModel{
+		config:       config,
+		stage:        selectDevice,
+		state:        getting,
+		spinner:      getSpinner(),
+		tableManager: make(TableManager),
 	}
+	return m
 }
 
-func (m RunModel) Init() tea.Cmd {
+func (m RunModel) Init() Cmd {
 	return tea.Batch(m.spinner.Tick, getDevices())
 }
 
-func (m RunModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m RunModel) Update(msg Msg) (Model, Cmd) {
 	switch msg := msg.(type) {
 
-	case tea.KeyMsg:
+	case KeyMsg:
 
 		switch msg.String() {
 
 		case "?":
-			m.cursor.ToggleHelp()
-
+			m.showHelp = !m.showHelp
+			return m, nil
 		case "ctrl+c", "q":
 			return m, tea.Quit
-
 		case "up", "k":
-			m.cursor.Previous()
-			m.table.SetCursor(m.cursor.Index())
-		case "down", "j":
-			m.cursor.Next()
-			m.table.SetCursor(m.cursor.Index())
-		case "left", "h":
-			m, err := m.back()
-			if err == nil {
-				m.cursor = utils.NewNavigator(0, len(m.devices))
+			if m.tableManager[m.stage].Cursor() == 0 {
+				m.tableManager[m.stage].GotoBottom()
+			} else {
+				m.tableManager[m.stage].MoveUp(1)
 			}
+		case "down", "j":
+			if m.tableManager[m.stage].Cursor()+1 >= len(m.tableManager[m.stage].Rows()) {
+				m.tableManager[m.stage].GotoTop()
+			} else {
+				m.tableManager[m.stage].MoveDown(1)
+			}
+		case "left", "h":
+			m.back()
+			return m, nil
+		case "right", "l":
+			m.forward()
 			return m, nil
 		case "enter":
 			m, cmd := m.doNextThing()
@@ -76,13 +95,11 @@ func (m RunModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case devicesComplete:
 		m.devices = msg
-		m.cursor = utils.NewNavigator(0, len(m.devices))
 		m.state = view
-		m.table = utils.GetDeviceTable(m.devices)
-		m.table.SetCursor(m.cursor.Index())
+		m.tableManager[selectDevice] = utils.GetDeviceTable(m.devices)
 		return m, nil
 	case spinner.TickMsg:
-		var cmd tea.Cmd
+		var cmd Cmd
 		m.spinner, cmd = m.spinner.Update(msg)
 		return m, cmd
 	}
@@ -91,25 +108,34 @@ func (m RunModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 // Go back in the process
-func (m RunModel) back() (RunModel, error) {
-	if m.stage == device {
-		return m, errors.New("Couldn't go back")
+func (m *RunModel) back() {
+	if m.stage == selectDevice {
+		return
 	}
-	m.stage = device
-	return m, nil
+	m.stage = selectDevice
+}
+
+// Available after advancing at least once
+func (m *RunModel) forward() {
+	if m.selectionManager.SelectedDevice.ID == "" {
+		return
+	}
+	m.stage = selectConfig
 }
 
 // Go to the next part of the process
-func (m RunModel) doNextThing() (RunModel, tea.Cmd) {
-	var cmd tea.Cmd
+func (m RunModel) doNextThing() (RunModel, Cmd) {
+	var cmd Cmd
 	switch m.stage {
-	case device:
-		m.Selected_device = m.devices[m.cursor.Index()]
-		m.cursor.Reset(len(m.configs))
-		m.stage = config
+	case selectDevice:
+		m.selectionManager.SelectedDevice = m.devices[m.tableManager[selectDevice].Cursor()]
+		m.stage = selectConfig
+		if m.tableManager[selectConfig] == nil {
+			m.tableManager[selectConfig] = utils.GetConfigTable(m.config.RunConfigs)
+		}
 		cmd = nil
-	case config:
-		m.Selected_config = m.configs[m.cursor.Index()]
+	case selectConfig:
+		m.selectionManager.SelectedConfig = m.config.RunConfigs[m.tableManager[selectConfig].Cursor()]
 		cmd = tea.Quit
 	}
 	return m, cmd
@@ -117,43 +143,32 @@ func (m RunModel) doNextThing() (RunModel, tea.Cmd) {
 
 // Whether the model has enough information to run
 func (m RunModel) IsComplete() bool {
-	return m.Selected_config.Name != "" && m.Selected_device.ID != ""
+	return m.selectionManager.SelectedConfig.Name != "" && m.selectionManager.SelectedDevice.ID != ""
+}
+
+func (m RunModel) SelectedDevice() utils.Device {
+	return m.selectionManager.SelectedDevice
+}
+
+func (m RunModel) SelectedConfig() utils.FlutterRunConfig {
+	return m.selectionManager.SelectedConfig
 }
 
 func (m RunModel) View() string {
 	var s string = ""
-	if m.cursor.ShouldShowHelp() {
-		s += controlsHelpMessage
-	}
 	switch m.state {
 	case view:
-		switch m.stage {
-		case device:
-			// s += "Select a device\n\n"
-			//
-			// for i, device := range m.devices {
-			// 	cursor := " "
-			// 	if m.cursor.Index() == i {
-			// 		cursor = utils.CursorChar
-			// 	}
-			// 	s += fmt.Sprintf("%s %s - %s\n", cursor, device.Name, device.ID)
-			// }
-
-			s += m.table.View()
-			s += "\n"
-		case config:
-			s += "Select a config\n\n"
-			for i, config := range m.configs {
-				cursor := " "
-				if m.cursor.Index() == i {
-					cursor = utils.CursorChar
-				}
-				s += fmt.Sprintf("%s %s\n", cursor, config.Name)
-			}
-		}
-
+		s += fmt.Sprintf("Selected Device: %s\n", m.selectionManager.SelectedDevice.Name)
+		s += fmt.Sprintf("Selected Config: %s\n", m.selectionManager.SelectedConfig.Name)
+		s += m.tableManager[m.stage].View()
+		s += "\n"
 		s += fmt.Sprintf("\n%d/%d", m.stage+1, _length)
 		s += quitAndHelpMessage
+
+		if m.showHelp {
+			s += "\n"
+			s += controlsHelpMessage
+		}
 		return s
 	case getting:
 		spinner := m.spinner.View()
@@ -164,8 +179,8 @@ func (m RunModel) View() string {
 	}
 }
 
-func getDevices() tea.Cmd {
-	return func() tea.Msg {
+func getDevices() Cmd {
+	return func() Msg {
 		cmd := utils.FlutterDevices()
 		output, err := cmd.Output()
 

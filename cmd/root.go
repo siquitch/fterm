@@ -1,18 +1,19 @@
 package cmd
 
 import (
+	"flutterterm/pkg/utils"
 	"os"
 
 	"github.com/spf13/cobra"
 )
 
-
+var config *utils.Config
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "flutterterm",
 	Short: "A flutter command line tool",
-	Long: ``,
+	Long:  ``,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	// Run: func(cmd *cobra.Command, args []string) { },
@@ -28,7 +29,16 @@ func Execute() {
 }
 
 func init() {
+	cobra.OnInitialize(setConfig)
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
+func setConfig() {
+	c, err := utils.GetConfig()
 
+	if err != nil {
+		panic(err)
+	}
+
+	config = &c
+}

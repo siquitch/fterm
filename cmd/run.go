@@ -13,26 +13,37 @@ import (
 // The file to look for in a flutter project
 const pubspec = "pubspec.yaml"
 
+const (
+	force     = "force"
+	favorites = "favorites"
+)
+
 // runCmd represents the run command
 var runCmd = &cobra.Command{
 	Use:   "run",
 	Short: "A guided flutter run command",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		if !assertRootPath() {
+		force, err := cmd.Flags().GetBool(force)
+
+		if err != nil {
+			utils.PrintError(err.Error())
+		}
+
+		if !assertRootPath() && !force {
 			return
 		}
 
 		utils.PrintInfo(fmt.Sprintf("Flutter directory detected. Getting devices\n"))
 
-		configs, err := utils.GetConfigs()
+		configs := config.RunConfigs
 
 		// Add a default run config if none exist
 		if len(configs) == 0 {
 			utils.PrintInfo("No configs found, using default\n\n")
 			help := fmt.Sprintf("Try creating a \"%s\" file or adding a config to an already created one", utils.ConfigPath)
 			utils.PrintHelp(help)
-			defaultConfig, err := utils.DefaultConfig()
+			defaultConfig, err := utils.DefaultRunConfig()
 			if err != nil {
 				utils.PrintError(err.Error())
 				return
@@ -42,7 +53,7 @@ var runCmd = &cobra.Command{
 			utils.PrintSuccess(fmt.Sprintf("%d configs found\n\n", len(configs)))
 		}
 
-		p := tea.NewProgram(ui.InitialRunModel(configs))
+		p := tea.NewProgram(ui.InitialRunModel(*config))
 
 		model, err := p.Run()
 
@@ -63,11 +74,11 @@ var runCmd = &cobra.Command{
 
 // Runs command based on the model received
 func setupAndRun(m ui.RunModel) {
-	fmt.Printf("Running %s on %s\n\n", m.Selected_config.Name, m.Selected_device.Name)
+	fmt.Printf("Running %s on %s\n\n", m.SelectedConfig().Name, m.SelectedDevice().Name)
 
 	// Device
-	device := m.Selected_device.ID
-	config := m.Selected_config
+	device := m.SelectedDevice().ID
+	config := m.SelectedConfig()
 
 	err := config.AssertConfig()
 
@@ -82,7 +93,7 @@ func setupAndRun(m ui.RunModel) {
 		args = append(args, "-t", config.Target)
 	}
 	if config.Mode != "" {
-        arg := fmt.Sprintf("--%s", config.Mode)
+		arg := fmt.Sprintf("--%s", config.Mode)
 		args = append(args, arg)
 	}
 	if config.Flavor != "" {
@@ -127,5 +138,7 @@ func assertRootPath() bool {
 }
 
 func init() {
+	runCmd.Flags().Bool(force, false, "")
+	runCmd.Flags().BoolP(favorites, string(favorites[0]), false, "Show favorites")
 	rootCmd.AddCommand(runCmd)
 }

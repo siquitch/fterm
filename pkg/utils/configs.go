@@ -10,20 +10,15 @@ import (
 )
 
 const (
-	ConfigPath  = ".fterm_config.json"
 	mainPath    = "main.dart"
 	mainLibPath = "lib/main.dart"
 )
 
 // --mode
-var flutterModes = []string{
-	"debug", "profile", "release",
-}
+var flutterModes = []string{"debug", "profile", "release"}
 
 // main.dart paths to look for
-var mainPaths = []string{
-	mainPath, mainLibPath,
-}
+var mainPaths = []string{mainPath, mainLibPath}
 
 type FlutterRunConfig struct {
 	Name               string `json:"name"`
@@ -67,7 +62,7 @@ func (config FlutterRunConfig) ToString() string {
 	return s
 }
 
-func DefaultConfig() (FlutterRunConfig, error) {
+func DefaultRunConfig() (FlutterRunConfig, error) {
 	target, err := findDefaultTarget()
 	if err != nil {
 		return FlutterRunConfig{}, err
@@ -121,4 +116,22 @@ func findDefaultTarget() (string, error) {
 	}
 	err := errors.New("main.dart file not found")
 	return "", err
+}
+
+func GetConfigTable(configs []FlutterRunConfig) TableModel {
+	c := []TableColumn{
+		{Title: "Config", Width: 40},
+	}
+
+	var r []TableRow
+
+	for _, config := range configs {
+		row := TableRow{config.Name}
+
+		r = append(r, row)
+	}
+
+	t := GetTable(c, r)
+
+	return t
 }
