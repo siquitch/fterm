@@ -1,7 +1,9 @@
 package cmd
 
 import (
-	"flutterterm/pkg/ui"
+	"flutterterm/pkg/command"
+	"flutterterm/pkg/flows"
+	"flutterterm/pkg/model"
 	"flutterterm/pkg/utils"
 	"fmt"
 	"os"
@@ -9,9 +11,6 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/spf13/cobra"
 )
-
-// The file to look for in a flutter project
-const pubspec = "pubspec.yaml"
 
 const (
 	force     = "force"
@@ -30,63 +29,45 @@ var runCmd = &cobra.Command{
 			utils.PrintError(err.Error())
 		}
 
-		if !assertRootPath() && !force {
+		if !model.AssertRootPath(force) {
 			return
 		}
 
-		utils.PrintInfo(fmt.Sprintf("Flutter directory detected. Getting devices\n"))
+		if len(args) < 1 {
 
-		configs := config.RunConfigs
+			p := tea.NewProgram(flows.InitialRunModel(*config))
 
-		// Add a default run config if none exist
-		if len(configs) == 0 {
-			utils.PrintInfo("No configs found, using default\n\n")
-			help := fmt.Sprintf("Try creating a \"%s\" file or adding a config to an already created one", utils.ConfigPath)
-			utils.PrintHelp(help)
-			defaultConfig, err := utils.DefaultRunConfig()
+			model, err := p.Run()
+
 			if err != nil {
-				utils.PrintError(err.Error())
+				utils.PrintError(fmt.Sprintf("Error %s", err.Error()))
 				return
 			}
-			configs = append(configs, defaultConfig)
-		} else {
-			utils.PrintSuccess(fmt.Sprintf("%d configs found\n\n", len(configs)))
-		}
 
-		p := tea.NewProgram(ui.InitialRunModel(*config))
+			runModel, _ := model.(flows.RunModel)
 
-		model, err := p.Run()
+			if !runModel.IsComplete() {
+				return
+			}
 
-		if err != nil {
-			utils.PrintError(fmt.Sprintf("Error %s", err.Error()))
+			setupAndRun(runModel)
 			return
 		}
 
-		runModel, _ := model.(ui.RunModel)
-
-		if !runModel.IsComplete() {
-			return
+		if len(args) == 1 {
+			fmt.Println(args[0])
 		}
 
-		setupAndRun(runModel)
 	},
 }
 
 // Runs command based on the model received
-func setupAndRun(m ui.RunModel) {
+func setupAndRun(m flows.RunModel) {
 	fmt.Printf("Running %s on %s\n\n", m.SelectedConfig().Name, m.SelectedDevice().Name)
 
 	// Device
 	device := m.SelectedDevice().ID
 	config := m.SelectedConfig()
-
-	err := config.AssertConfig()
-
-	if err != nil {
-		e := fmt.Sprintf("Invalid configuration: %s", err)
-		utils.PrintError(e)
-		return
-	}
 
 	args := []string{"run", "-d", device}
 	if config.Target != "" {
@@ -99,18 +80,18 @@ func setupAndRun(m ui.RunModel) {
 	if config.Flavor != "" {
 		args = append(args, "--flavor", config.Flavor)
 	}
-	if config.DartDefineFromFile != "" {
-		args = append(args, "--dart-define-from-file", config.DartDefineFromFile)
+	if config.DartDefineFile != "" {
+		args = append(args, "--dart-define-from-file", config.DartDefineFile)
 	}
 
-	cmd := utils.FlutterRun(args)
+	cmd := command.FlutterRun(args)
 
 	// For color and input handling
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Stdin = os.Stdin
 
-	err = cmd.Start()
+	err := cmd.Start()
 
 	if err != nil {
 		utils.PrintError(err.Error())
@@ -125,20 +106,8 @@ func setupAndRun(m ui.RunModel) {
 	}
 }
 
-// Check if in a flutter project
-func assertRootPath() bool {
-	_, err := os.Stat(pubspec)
-
-	if err != nil {
-		utils.PrintError("pubspec.yaml not found. Make sure you are in a flutter directory")
-		return false
-	}
-
-	return true
-}
-
 func init() {
-	runCmd.Flags().Bool(force, false, "")
 	runCmd.Flags().BoolP(favorites, string(favorites[0]), false, "Show favorites")
+    runCmd.Flags().Bool(force, false, "")
 	rootCmd.AddCommand(runCmd)
 }

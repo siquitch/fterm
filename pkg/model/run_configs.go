@@ -1,4 +1,4 @@
-package utils
+package model
 
 import (
 	"encoding/json"
@@ -9,10 +9,7 @@ import (
 	"strings"
 )
 
-const (
-	mainPath    = "main.dart"
-	mainLibPath = "lib/main.dart"
-)
+
 
 // --mode
 var flutterModes = []string{"debug", "profile", "release"}
@@ -77,7 +74,7 @@ func DefaultRunConfig() (FlutterRunConfig, error) {
 func GetConfigs() ([]FlutterRunConfig, error) {
 	var configs []FlutterRunConfig
 
-	config_file, err := os.Open(ConfigPath)
+	config_file, err := os.Open(DefaultConfigPath)
 
 	if err != nil {
 		return configs, err
@@ -107,31 +104,6 @@ func GetConfigs() ([]FlutterRunConfig, error) {
 	return configs, nil
 }
 
-// Looks for main.dart files in default config
-func findDefaultTarget() (string, error) {
-	for _, path := range mainPaths {
-		if _, err := os.Stat(path); err == nil {
-			return path, nil
-		}
-	}
-	err := errors.New("main.dart file not found")
-	return "", err
-}
 
-func GetConfigTable(configs []FlutterRunConfig) TableModel {
-	c := []TableColumn{
-		{Title: "Config", Width: 40},
-	}
 
-	var r []TableRow
 
-	for _, config := range configs {
-		row := TableRow{config.Name}
-
-		r = append(r, row)
-	}
-
-	t := GetTable(c, r)
-
-	return t
-}

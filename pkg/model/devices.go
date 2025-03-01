@@ -1,4 +1,4 @@
-package utils
+package model
 
 import (
 	"encoding/json"
@@ -61,24 +61,4 @@ func ParseEmulators(bytes []byte) ([]Device, error) {
 	return devices, nil
 }
 
-func GetDeviceTable(devices []Device) TableModel {
-	c := []TableColumn{
-		{Title: "Name", Width: 40},
-		{Title: "ID", Width: 40},
-	}
 
-	var r []TableRow
-
-	for _, device := range devices {
-		row := TableRow{
-			device.Name,
-			device.ID,
-		}
-
-		r = append(r, row)
-	}
-
-	t := GetTable(c, r)
-
-	return t
-}

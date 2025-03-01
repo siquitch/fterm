@@ -1,5 +1,4 @@
-// Flutter commands go here
-package utils
+package command
 
 import "os/exec"
 

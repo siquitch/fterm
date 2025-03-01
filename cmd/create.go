@@ -1,12 +1,6 @@
 package cmd
 
 import (
-	"flutterterm/pkg/ui"
-	"flutterterm/pkg/utils"
-	"fmt"
-	"os/exec"
-
-	tea "github.com/charmbracelet/bubbletea"
 	"github.com/spf13/cobra"
 )
 
@@ -16,38 +10,38 @@ var createCmd = &cobra.Command{
 	Short: "Create a new emulator",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		p := tea.NewProgram(ui.InitialCreateEmulatorModel())
-
-		model, err := p.Run()
-		if err != nil {
-			utils.PrintError(err.Error())
-			return
-		}
-
-		createModel, ok := model.(ui.CreateEmulatorModel)
-
-		if !ok {
-			utils.PrintError("Could not case tea model to create emulator model")
-			return
-		}
-
-		if !createModel.IsComplete() {
-			return
-		}
-
-		runArgs := []string{"emulators", "--create", "--name", createModel.Text()}
-
-		runCmd := exec.Command("flutter", runArgs...)
-
-		// Using cmd.Run() doesn't work for some reason
-		_, err = runCmd.CombinedOutput()
-
-		if err != nil {
-			utils.PrintError(fmt.Sprintf("Error: %s\n", err.Error()))
-			return
-		}
-
-		utils.PrintInfo(fmt.Sprintf("Successfully created %s", createModel.Text()))
+		// p := tea.NewProgram(pkg.InitialCreateEmulatorModel())
+		//
+		// model, err := p.Run()
+		// if err != nil {
+		// 	utils.PrintError(err.Error())
+		// 	return
+		// }
+		//
+		// createModel, ok := model.(pkg.CreateEmulatorModel)
+		//
+		// if !ok {
+		// 	utils.PrintError("Could not case tea model to create emulator model")
+		// 	return
+		// }
+		//
+		// if !createModel.IsComplete() {
+		// 	return
+		// }
+		//
+		// runArgs := []string{"emulators", "--create", "--name", createModel.Text()}
+		//
+		// runCmd := exec.Command("flutter", runArgs...)
+		//
+		// // Using cmd.Run() doesn't work for some reason
+		// _, err = runCmd.CombinedOutput()
+		//
+		// if err != nil {
+		// 	utils.PrintError(fmt.Sprintf("Error: %s\n", err.Error()))
+		// 	return
+		// }
+		//
+		// utils.PrintInfo(fmt.Sprintf("Successfully created %s", createModel.Text()))
 	},
 }
 

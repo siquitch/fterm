@@ -1,32 +1,33 @@
-package ui
+package flows
 
 import (
-	"flutterterm/pkg/utils"
+	"flutterterm/pkg/command"
+	"flutterterm/pkg/model"
+	"flutterterm/pkg/ui"
 	"fmt"
 
-	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
 type SelectionManager struct {
-	SelectedDevice utils.Device
-	SelectedConfig utils.FlutterRunConfig
+	SelectedDevice model.Device
+	SelectedConfig model.FlutterConfig
 }
 
-type TableManager map[deviceStage]utils.TableModel
+type TableManager map[deviceStage]ui.TableModel
 
 type RunModel struct {
-	devices  []utils.Device
-	config   utils.Config
+	devices  []model.Device
+	config   model.Config
 	showHelp bool
 
 	stage deviceStage
-	state state
+	state FlowState
 
 	selectionManager SelectionManager
 	tableManager     TableManager
 
-	spinner spinner.Model
+	spinner ui.SpinnerModel
 }
 
 type deviceStage int
@@ -42,12 +43,12 @@ type Cmd = tea.Cmd
 type Msg = tea.Msg
 type KeyMsg = tea.KeyMsg
 
-func InitialRunModel(config utils.Config) RunModel {
+func InitialRunModel(config model.Config) RunModel {
 	m := RunModel{
 		config:       config,
 		stage:        selectDevice,
 		state:        getting,
-		spinner:      getSpinner(),
+		spinner:      ui.GetSpinner(),
 		tableManager: make(TableManager),
 	}
 	return m
@@ -87,18 +88,19 @@ func (m RunModel) Update(msg Msg) (Model, Cmd) {
 		case "right", "l":
 			m.forward()
 			return m, nil
+		case "f":
 		case "enter":
 			m, cmd := m.doNextThing()
 			return m, cmd
 		}
 		return m, nil
 
-	case devicesComplete:
+	case DevicesComplete:
 		m.devices = msg
 		m.state = view
-		m.tableManager[selectDevice] = utils.GetDeviceTable(m.devices)
+		m.tableManager[selectDevice] = ui.GetDeviceTable(m.devices)
 		return m, nil
-	case spinner.TickMsg:
+	case ui.TickMsg:
 		var cmd Cmd
 		m.spinner, cmd = m.spinner.Update(msg)
 		return m, cmd
@@ -131,11 +133,11 @@ func (m RunModel) doNextThing() (RunModel, Cmd) {
 		m.selectionManager.SelectedDevice = m.devices[m.tableManager[selectDevice].Cursor()]
 		m.stage = selectConfig
 		if m.tableManager[selectConfig] == nil {
-			m.tableManager[selectConfig] = utils.GetConfigTable(m.config.RunConfigs)
+			m.tableManager[selectConfig] = ui.GetConfigTable(m.config.Configs)
 		}
 		cmd = nil
 	case selectConfig:
-		m.selectionManager.SelectedConfig = m.config.RunConfigs[m.tableManager[selectConfig].Cursor()]
+		m.selectionManager.SelectedConfig = m.config.Configs[m.tableManager[selectConfig].Cursor()]
 		cmd = tea.Quit
 	}
 	return m, cmd
@@ -146,11 +148,11 @@ func (m RunModel) IsComplete() bool {
 	return m.selectionManager.SelectedConfig.Name != "" && m.selectionManager.SelectedDevice.ID != ""
 }
 
-func (m RunModel) SelectedDevice() utils.Device {
+func (m RunModel) SelectedDevice() model.Device {
 	return m.selectionManager.SelectedDevice
 }
 
-func (m RunModel) SelectedConfig() utils.FlutterRunConfig {
+func (m RunModel) SelectedConfig() model.FlutterConfig {
 	return m.selectionManager.SelectedConfig
 }
 
@@ -179,21 +181,25 @@ func (m RunModel) View() string {
 	}
 }
 
+func (m RunModel) CurrentTable() ui.TableModel {
+	return m.tableManager[m.stage]
+}
+
 func getDevices() Cmd {
 	return func() Msg {
-		cmd := utils.FlutterDevices()
+		cmd := command.FlutterDevices()
 		output, err := cmd.Output()
 
 		if err != nil {
-			return cmdError(err.Error())
+			return CmdError(err.Error())
 		}
 
-		devices, err := utils.ParseDevices(output)
+		devices, err := model.ParseDevices(output)
 
 		if err != nil {
-			return cmdError(err.Error())
+			return CmdError(err.Error())
 		}
 
-		return devicesComplete(devices)
+		return DevicesComplete(devices)
 	}
 }

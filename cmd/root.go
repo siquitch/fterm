@@ -1,13 +1,15 @@
 package cmd
 
 import (
+	"flutterterm/pkg/model"
 	"flutterterm/pkg/utils"
+	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
 )
 
-var config *utils.Config
+var config *model.Config
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -34,11 +36,11 @@ func init() {
 }
 
 func setConfig() {
-	c, err := utils.GetConfig()
+	c, err := model.LoadConfig(model.DefaultConfigPath)
 
 	if err != nil {
-		panic(err)
+		utils.PrintError(fmt.Sprintf("Error loading config, try running flutterterm help init: %s", err.Error()))
 	}
 
-	config = &c
+	config = c
 }
