@@ -2,6 +2,8 @@ package flows
 
 import (
 	"flutterterm/pkg/model"
+
+	tea "github.com/charmbracelet/bubbletea"
 )
 
 type DevicesComplete []model.Device
@@ -21,9 +23,17 @@ const (
 	running
 )
 
+type Model = tea.Model
+type Cmd = tea.Cmd
+type Msg = tea.Msg
+type KeyMsg = tea.KeyMsg
+
+func Quit() Msg {
+	return tea.QuitMsg{}
+}
+
 // Unicode for the star icon
 const starIcon = "\u2B50"
-
 
 const quitAndHelpMessage = "\nPress q to quit, or ? for help\n"
 const controlsHelpMessage = "Controls\nj, down: go down\nk, up: go up\nh, left: go back (if applicable)\nenter: submit\n\n"

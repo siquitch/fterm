@@ -1,14 +1,10 @@
 package cmd
 
 import (
-	"flutterterm/pkg/command"
 	"flutterterm/pkg/flows"
 	"flutterterm/pkg/model"
 	"flutterterm/pkg/utils"
-	"fmt"
-	"os"
 
-	tea "github.com/charmbracelet/bubbletea"
 	"github.com/spf13/cobra"
 )
 
@@ -22,6 +18,7 @@ var runCmd = &cobra.Command{
 	Use:   "run",
 	Short: "A guided flutter run command",
 	Long:  ``,
+	Args:  cobra.MaximumNArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
 		force, err := cmd.Flags().GetBool(force)
 
@@ -33,81 +30,39 @@ var runCmd = &cobra.Command{
 			return
 		}
 
-		if len(args) < 1 {
+		var runConfig model.RunConfig
 
-			p := tea.NewProgram(flows.InitialRunModel(*config))
+		argLen := len(args)
 
-			model, err := p.Run()
-
+		if argLen == 0 {
+			runConfig, _ = flows.RunFlow(*config)
+		} else if argLen == 1 {
+			c, err := config.GetConfigByName(string(args[0]))
 			if err != nil {
-				utils.PrintError(fmt.Sprintf("Error %s", err.Error()))
+				utils.PrintError(err.Error())
 				return
 			}
-
-			runModel, _ := model.(flows.RunModel)
-
-			if !runModel.IsComplete() {
+			d, _ := flows.DeviceFlow()
+			if !d.Verified() {
 				return
 			}
+			runConfig = model.RunConfig{
+				SelectedConfig: *c,
+				SelectedDevice: d,
+			}
+		}
 
-			setupAndRun(runModel)
+		if !runConfig.IsComplete() {
 			return
 		}
 
-		if len(args) == 1 {
-			fmt.Println(args[0])
-		}
-
+		config := runConfig.SelectedConfig
+		config.Run(runConfig.SelectedDevice)
 	},
-}
-
-// Runs command based on the model received
-func setupAndRun(m flows.RunModel) {
-	fmt.Printf("Running %s on %s\n\n", m.SelectedConfig().Name, m.SelectedDevice().Name)
-
-	// Device
-	device := m.SelectedDevice().ID
-	config := m.SelectedConfig()
-
-	args := []string{"run", "-d", device}
-	if config.Target != "" {
-		args = append(args, "-t", config.Target)
-	}
-	if config.Mode != "" {
-		arg := fmt.Sprintf("--%s", config.Mode)
-		args = append(args, arg)
-	}
-	if config.Flavor != "" {
-		args = append(args, "--flavor", config.Flavor)
-	}
-	if config.DartDefineFile != "" {
-		args = append(args, "--dart-define-from-file", config.DartDefineFile)
-	}
-
-	cmd := command.FlutterRun(args)
-
-	// For color and input handling
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	cmd.Stdin = os.Stdin
-
-	err := cmd.Start()
-
-	if err != nil {
-		utils.PrintError(err.Error())
-		return
-	}
-
-	if err := cmd.Wait(); err != nil {
-		s := fmt.Sprintf("Flutterterm finished with error: %s", err)
-		utils.PrintError(s)
-	} else {
-		utils.PrintSuccess("Flutterterm finished successfully")
-	}
 }
 
 func init() {
 	runCmd.Flags().BoolP(favorites, string(favorites[0]), false, "Show favorites")
-    runCmd.Flags().Bool(force, false, "")
+	runCmd.Flags().Bool(force, false, "")
 	rootCmd.AddCommand(runCmd)
 }

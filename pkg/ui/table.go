@@ -50,12 +50,13 @@ func GetDeviceTable(devices []model.Device) TableModel {
 func GetConfigTable(configs []model.FlutterConfig) TableModel {
 	c := []TableColumn{
 		{Title: "Config", Width: 40},
+		{Title: "Description", Width: 40},
 	}
 
 	var r []TableRow
 
 	for _, config := range configs {
-		row := TableRow{config.Name}
+		row := TableRow{config.Name, config.Description}
 
 		r = append(r, row)
 	}

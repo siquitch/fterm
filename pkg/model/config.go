@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"strings"
 )
 
 const version = "0.0.3"
@@ -18,6 +17,9 @@ const (
 	mainPath          = "main.dart"
 	mainLibPath       = "lib/main.dart"
 )
+
+// main.dart paths to look for
+var mainPaths = []string{mainPath, mainLibPath}
 
 // Config represents the entire configuration structure
 type Config struct {
@@ -32,7 +34,6 @@ type Config struct {
 type FlutterConfig struct {
 	Name           string   `json:"name"`
 	Description    string   `json:"description"`
-	Environment    string   `json:"environment"`
 	Mode           string   `json:"mode"`
 	Flavor         string   `json:"flavor"`
 	Target         string   `json:"target"`
@@ -52,6 +53,11 @@ type DeviceConfig struct {
 	Name     string `json:"name"`
 	Type     string `json:"type"`
 	Platform string `json:"platform"`
+}
+
+type RunConfig struct {
+	SelectedConfig FlutterConfig
+	SelectedDevice Device
 }
 
 func InitConfig(path string, force bool) error {
@@ -236,23 +242,33 @@ func (fc *FlutterConfig) BuildFlutterCommand(deviceID string) *exec.Cmd {
 	return cmd
 }
 
-// RunConfig executes flutter with the specified config and device
-func RunConfig(configName string, deviceID string, config *Config) error {
-	flutterConfig, err := config.GetConfigByName(configName)
-	if err != nil {
-		return err
-	}
+// Whether the model has enough information to run
+func (rc *RunConfig) IsComplete() bool {
+	return rc.SelectedConfig.Name != "" && rc.SelectedDevice.ID != ""
+}
 
-	cmd := flutterConfig.BuildFlutterCommand(deviceID)
+func (fc *FlutterConfig) Run(device Device) {
+	utils.PrintInfo(fmt.Sprintf("Running %s on %s\n\n", fc.Name, device.Name))
+	cmd := fc.BuildFlutterCommand(device.ID)
 
-	// Set up command to display output
+	// For color and input handling
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
+	cmd.Stdin = os.Stdin
 
-	fmt.Printf("Running Flutter with config '%s' on device '%s'\n", configName, deviceID)
-	fmt.Printf("Command: %s\n", strings.Join(cmd.Args, " "))
+	err := cmd.Start()
 
-	return cmd.Run()
+	if err != nil {
+		utils.PrintError(err.Error())
+		return
+	}
+
+	if err := cmd.Wait(); err != nil {
+		s := fmt.Sprintf("Flutterterm finished with error: %s", err)
+		utils.PrintError(s)
+	} else {
+		utils.PrintSuccess("Flutterterm finished successfully")
+	}
 }
 
 // Check if in a flutter project

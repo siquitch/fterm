@@ -20,7 +20,8 @@ var configCmd = &cobra.Command{
                 fmt.Println(s)
             }
         }
-	}}
+    },
+}
 
 func init() {
 	rootCmd.AddCommand(configCmd)

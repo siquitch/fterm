@@ -61,4 +61,6 @@ func ParseEmulators(bytes []byte) ([]Device, error) {
 	return devices, nil
 }
 
-
+func (d Device) Verified() bool {
+	return d.Name != "" && d.ID != ""
+}

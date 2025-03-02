@@ -4,19 +4,15 @@ import (
 	"flutterterm/pkg/command"
 	"flutterterm/pkg/model"
 	"flutterterm/pkg/ui"
+	"flutterterm/pkg/utils"
 	"fmt"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-type SelectionManager struct {
-	SelectedDevice model.Device
-	SelectedConfig model.FlutterConfig
-}
-
 type TableManager map[deviceStage]ui.TableModel
 
-type RunModel struct {
+type RunFlowModel struct {
 	devices  []model.Device
 	config   model.Config
 	showHelp bool
@@ -24,8 +20,8 @@ type RunModel struct {
 	stage deviceStage
 	state FlowState
 
-	selectionManager SelectionManager
-	tableManager     TableManager
+	runConfig    model.RunConfig
+	tableManager TableManager
 
 	spinner ui.SpinnerModel
 }
@@ -38,13 +34,32 @@ const (
 	_length
 )
 
-type Model = tea.Model
-type Cmd = tea.Cmd
-type Msg = tea.Msg
-type KeyMsg = tea.KeyMsg
+// Entry point to this flow
+func RunFlow(config model.Config) (model.RunConfig, error) {
+	p := tea.NewProgram(InitialRunModel(config))
 
-func InitialRunModel(config model.Config) RunModel {
-	m := RunModel{
+	m, err := p.Run()
+
+	if err != nil {
+		utils.PrintError(fmt.Sprintf("Error %s", err.Error()))
+	}
+
+	rm, _ := m.(RunFlowModel)
+
+	rc := model.RunConfig{
+		SelectedConfig: rm.runConfig.SelectedConfig,
+		SelectedDevice: rm.runConfig.SelectedDevice,
+	}
+
+	if err != nil {
+		utils.PrintError(fmt.Sprintf("Error %s", err.Error()))
+	}
+
+	return rc, err
+}
+
+func InitialRunModel(config model.Config) RunFlowModel {
+	m := RunFlowModel{
 		config:       config,
 		stage:        selectDevice,
 		state:        getting,
@@ -54,44 +69,46 @@ func InitialRunModel(config model.Config) RunModel {
 	return m
 }
 
-func (m RunModel) Init() Cmd {
+func (m RunFlowModel) Init() Cmd {
 	return tea.Batch(m.spinner.Tick, getDevices())
 }
 
-func (m RunModel) Update(msg Msg) (Model, Cmd) {
+func (m RunFlowModel) Update(msg Msg) (Model, Cmd) {
 	switch msg := msg.(type) {
 
 	case KeyMsg:
+		if m.state == view {
 
-		switch msg.String() {
+			switch msg.String() {
 
-		case "?":
-			m.showHelp = !m.showHelp
-			return m, nil
-		case "ctrl+c", "q":
-			return m, tea.Quit
-		case "up", "k":
-			if m.tableManager[m.stage].Cursor() == 0 {
-				m.tableManager[m.stage].GotoBottom()
-			} else {
-				m.tableManager[m.stage].MoveUp(1)
+			case "?":
+				m.showHelp = !m.showHelp
+				return m, nil
+			case "ctrl+c", "q":
+				return m, tea.Quit
+			case "up", "k":
+				if m.tableManager[m.stage].Cursor() == 0 {
+					m.tableManager[m.stage].GotoBottom()
+				} else {
+					m.tableManager[m.stage].MoveUp(1)
+				}
+			case "down", "j":
+				if m.tableManager[m.stage].Cursor()+1 >= len(m.tableManager[m.stage].Rows()) {
+					m.tableManager[m.stage].GotoTop()
+				} else {
+					m.tableManager[m.stage].MoveDown(1)
+				}
+			case "left", "h":
+				m.back()
+				return m, nil
+			case "right", "l":
+				m.forward()
+				return m, nil
+			case "f":
+			case "enter":
+				m, cmd := m.doNextThing()
+				return m, cmd
 			}
-		case "down", "j":
-			if m.tableManager[m.stage].Cursor()+1 >= len(m.tableManager[m.stage].Rows()) {
-				m.tableManager[m.stage].GotoTop()
-			} else {
-				m.tableManager[m.stage].MoveDown(1)
-			}
-		case "left", "h":
-			m.back()
-			return m, nil
-		case "right", "l":
-			m.forward()
-			return m, nil
-		case "f":
-		case "enter":
-			m, cmd := m.doNextThing()
-			return m, cmd
 		}
 		return m, nil
 
@@ -110,7 +127,7 @@ func (m RunModel) Update(msg Msg) (Model, Cmd) {
 }
 
 // Go back in the process
-func (m *RunModel) back() {
+func (m *RunFlowModel) back() {
 	if m.stage == selectDevice {
 		return
 	}
@@ -118,50 +135,37 @@ func (m *RunModel) back() {
 }
 
 // Available after advancing at least once
-func (m *RunModel) forward() {
-	if m.selectionManager.SelectedDevice.ID == "" {
+func (m *RunFlowModel) forward() {
+	if m.runConfig.SelectedDevice.ID == "" {
 		return
 	}
 	m.stage = selectConfig
 }
 
 // Go to the next part of the process
-func (m RunModel) doNextThing() (RunModel, Cmd) {
+func (m RunFlowModel) doNextThing() (RunFlowModel, Cmd) {
 	var cmd Cmd
 	switch m.stage {
 	case selectDevice:
-		m.selectionManager.SelectedDevice = m.devices[m.tableManager[selectDevice].Cursor()]
+		m.runConfig.SelectedDevice = m.devices[m.tableManager[selectDevice].Cursor()]
 		m.stage = selectConfig
 		if m.tableManager[selectConfig] == nil {
 			m.tableManager[selectConfig] = ui.GetConfigTable(m.config.Configs)
 		}
 		cmd = nil
 	case selectConfig:
-		m.selectionManager.SelectedConfig = m.config.Configs[m.tableManager[selectConfig].Cursor()]
+		m.runConfig.SelectedConfig = m.config.Configs[m.tableManager[selectConfig].Cursor()]
 		cmd = tea.Quit
 	}
 	return m, cmd
 }
 
-// Whether the model has enough information to run
-func (m RunModel) IsComplete() bool {
-	return m.selectionManager.SelectedConfig.Name != "" && m.selectionManager.SelectedDevice.ID != ""
-}
-
-func (m RunModel) SelectedDevice() model.Device {
-	return m.selectionManager.SelectedDevice
-}
-
-func (m RunModel) SelectedConfig() model.FlutterConfig {
-	return m.selectionManager.SelectedConfig
-}
-
-func (m RunModel) View() string {
+func (m RunFlowModel) View() string {
 	var s string = ""
 	switch m.state {
 	case view:
-		s += fmt.Sprintf("Selected Device: %s\n", m.selectionManager.SelectedDevice.Name)
-		s += fmt.Sprintf("Selected Config: %s\n", m.selectionManager.SelectedConfig.Name)
+		s += fmt.Sprintf("Selected Device: %s\n", m.runConfig.SelectedDevice.Name)
+		s += fmt.Sprintf("Selected Config: %s\n", m.runConfig.SelectedConfig.Name)
 		s += m.tableManager[m.stage].View()
 		s += "\n"
 		s += fmt.Sprintf("\n%d/%d", m.stage+1, _length)
@@ -181,7 +185,7 @@ func (m RunModel) View() string {
 	}
 }
 
-func (m RunModel) CurrentTable() ui.TableModel {
+func (m RunFlowModel) CurrentTable() ui.TableModel {
 	return m.tableManager[m.stage]
 }
 
