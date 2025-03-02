@@ -58,25 +58,20 @@ This will create a `.fterm_config.json` file
 
 ### **Running Commands**
 
-### **flutterterm emulators**
+#### Get emulators to launch
 ```bash
-# Start an existing emulator
 flutterterm emulators
 ```
-
-####  **flutterterm run**
-This command wraps the ```flutter run``` command
+#### Run with config options listed
 ```bash
 flutterterm run
 ```
-
+#### Run a specific config
 ```bash
-# Run a specific config
 flutterterm run [config]
 ```
-
+#### Run with the default config
 ```bash
-# Runs the default config you have set
 flutterterm run -d
 ```
 
