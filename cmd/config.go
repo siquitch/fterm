@@ -11,6 +11,7 @@ var configCmd = &cobra.Command{
 	Use:   "config",
 	Short: "View your current config",
 	Long:  "",
+    Args: cobra.MaximumNArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
 		if config != nil {
             s, err := config.ToString()

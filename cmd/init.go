@@ -1,6 +1,3 @@
-/*
-Copyright © 2025 NAME HERE <EMAIL ADDRESS>
-*/
 package cmd
 
 import (
@@ -26,7 +23,6 @@ var initCmd = &cobra.Command{
 		}
 	},
 }
-
 func init() {
 	configCmd.AddCommand(initCmd)
 	initCmd.Flags().Bool(force, false, "")
