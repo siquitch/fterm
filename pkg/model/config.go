@@ -70,6 +70,12 @@ func InitConfig(path string, force bool) error {
 		target = mainLibPath
 	}
 
+	_, err = LoadConfig(path)
+
+	if err == nil && !force {
+		return errors.New("Config already detected, use --force to reset it")
+	}
+
 	c := Config{
 		Version:       version,
 		DefaultConfig: "default",
