@@ -2,6 +2,7 @@ package model
 
 import (
 	"encoding/json"
+	"os/exec"
 	"strings"
 )
 
@@ -61,6 +62,27 @@ func ParseEmulators(bytes []byte) ([]Device, error) {
 	return devices, nil
 }
 
+// Whether device has sufficent data
 func (d Device) Verified() bool {
 	return d.Name != "" && d.ID != ""
+}
+
+func (d Device) BuildLaunchEmulatorCommand(isCold bool) *exec.Cmd {
+	args := []string{"emulators", "--launch", d.Name}
+
+	if isCold {
+		args = append(args, "--cold")
+	}
+
+	c := exec.Command("flutter", args...)
+
+	return c
+}
+
+func FlutterEmulators() *exec.Cmd {
+	return exec.Command("flutter", "emulators")
+}
+
+func FlutterDevices() *exec.Cmd {
+	return exec.Command("flutter", "devices", "--machine")
 }

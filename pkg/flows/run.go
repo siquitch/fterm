@@ -1,7 +1,6 @@
 package flows
 
 import (
-	"flutterterm/pkg/command"
 	"flutterterm/pkg/model"
 	"flutterterm/pkg/ui"
 	"flutterterm/pkg/utils"
@@ -191,7 +190,7 @@ func (m RunFlowModel) CurrentTable() ui.TableModel {
 
 func getDevices() Cmd {
 	return func() Msg {
-		cmd := command.FlutterDevices()
+		cmd := model.FlutterDevices()
 		output, err := cmd.Output()
 
 		if err != nil {

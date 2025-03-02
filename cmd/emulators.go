@@ -1,6 +1,9 @@
 package cmd
 
 import (
+	"flutterterm/pkg/flows"
+	"flutterterm/pkg/utils"
+
 	"github.com/spf13/cobra"
 )
 
@@ -14,16 +17,13 @@ var emulatorsCmd = &cobra.Command{
 	Short: "Runs 'flutter emulators'",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		// isCold, err := cmd.Flags().GetBool(cold)
+		isCold, err := cmd.Flags().GetBool(cold)
 
-		// p := tea.NewProgram(pkg.InitialEmulatorModel(isCold))
-		//
-		// _, err = p.Run()
-		//
-		// if err != nil {
-		// 	e := fmt.Sprintf("Emulators exited with error: %s", err)
-		// 	utils.PrintError(e)
-		// }
+		err = flows.EmulatorFlow(isCold)
+
+		if err != nil {
+			utils.PrintError(err.Error())
+		}
 	},
 }
 

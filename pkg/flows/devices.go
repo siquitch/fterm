@@ -25,15 +25,13 @@ func DeviceFlow() (model.Device, error) {
 	p := tea.NewProgram(d)
 
 	m, err := p.Run()
+
 	if err != nil {
 		utils.PrintError(fmt.Sprintf("Error %s", err.Error()))
+		return model.Device{}, err
 	}
 
 	d, _ = m.(DeviceFlowModel)
-
-	if err != nil {
-		utils.PrintError(fmt.Sprintf("Error %s", err.Error()))
-	}
 
 	return d.selectedDevice, err
 }

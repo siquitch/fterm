@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"flutterterm/pkg/command"
 	"flutterterm/pkg/model"
 	"flutterterm/pkg/utils"
 	"fmt"
@@ -20,7 +19,7 @@ var devicesCmd = &cobra.Command{
 }
 
 func execute() {
-	cmd := command.FlutterDevices()
+	cmd := model.FlutterDevices()
 	output, err := cmd.Output()
 	if err != nil {
 		utils.PrintError(err.Error())
