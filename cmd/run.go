@@ -11,6 +11,7 @@ import (
 const (
 	force     = "force"
 	favorites = "favorites"
+	def       = "default"
 )
 
 // runCmd represents the run command
@@ -26,6 +27,12 @@ var runCmd = &cobra.Command{
 			utils.PrintError(err.Error())
 		}
 
+		def, err := cmd.Flags().GetBool(def)
+
+		if err != nil {
+			utils.PrintError(err.Error())
+		}
+
 		if !model.AssertRootPath(force) {
 			return
 		}
@@ -34,10 +41,16 @@ var runCmd = &cobra.Command{
 
 		argLen := len(args)
 
-		if argLen == 0 {
+		if argLen == 0 && !def {
 			runConfig, _ = flows.RunFlow(*config)
-		} else if argLen == 1 {
-			c, err := config.GetConfigByName(string(args[0]))
+		} else if (argLen == 1 && !def) || (argLen == 0 && def) {
+			var c *model.FlutterConfig
+			var err error
+			if def {
+				c, err = config.GetConfigByName(config.DefaultConfig)
+			} else {
+				c, err = config.GetConfigByName(args[0])
+			}
 			if err != nil {
 				utils.PrintError(err.Error())
 				return
@@ -64,5 +77,6 @@ var runCmd = &cobra.Command{
 func init() {
 	runCmd.Flags().BoolP(favorites, string(favorites[0]), false, "Show favorites")
 	runCmd.Flags().Bool(force, false, "")
+	runCmd.Flags().BoolP(def, string(def[0]), false, "Run default config")
 	rootCmd.AddCommand(runCmd)
 }

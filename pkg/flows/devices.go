@@ -18,6 +18,7 @@ type DeviceFlowModel struct {
 	showHelp       bool
 }
 
+// Entry point for this flow
 func DeviceFlow() (model.Device, error) {
 	d := InitialDeviceFlowModel()
 
