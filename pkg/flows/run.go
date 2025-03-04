@@ -84,7 +84,7 @@ func (m RunFlowModel) Update(msg Msg) (Model, Cmd) {
 				m.showHelp = !m.showHelp
 				return m, nil
 			case "ctrl+c", "q":
-				return m, tea.Quit
+				return m, Quit
 			case "up", "k":
 				if m.tableManager[m.stage].Cursor() == 0 {
 					m.tableManager[m.stage].GotoBottom()
