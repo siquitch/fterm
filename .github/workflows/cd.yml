@@ -3,7 +3,7 @@ name: Continuous Deployment
 on:
   push:
     tags:
-      - 'v*' # Trigger for tags like v1.0.0
+      - 'v*' 
 
 permissions:
   contents: write
