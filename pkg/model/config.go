@@ -144,6 +144,51 @@ func (c *Config) SaveConfig(path string) error {
 	return nil
 }
 
+// Add new run config to config file
+func (c *Config) AddRunConfig(fc FlutterConfig) error {
+	if fc.Name == "" {
+		return errors.New("Name cannot be empty")
+	}
+	_, err := c.GetConfigByName(fc.Name)
+
+	// Config already exists
+	if err == nil {
+		return errors.New(fmt.Sprintf("Config %s already exists", fc.Name))
+	}
+
+	c.Configs = append(c.Configs, fc)
+
+	err = c.SaveConfig(DefaultConfigPath)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *Config) RemoveRunConfig(name string) error {
+	_, err := c.GetConfigByName(name)
+
+	if err != nil {
+		return err
+	}
+
+    configs := make([]FlutterConfig, 0)
+
+    for _, config := range c.Configs {
+        if config.Name != name {
+            configs = append(configs, config)
+        }
+    }
+
+    c.Configs = configs
+
+    err = c.SaveConfig(DefaultConfigPath)
+
+	return err
+}
+
 func (c *Config) GetConfigByName(name string) (*FlutterConfig, error) {
 	for _, config := range c.Configs {
 		if config.Name == name {
@@ -251,6 +296,15 @@ func (fc *FlutterConfig) BuildFlutterCommand(deviceID string) *exec.Cmd {
 // Whether the model has enough information to run
 func (rc *RunConfig) IsComplete() bool {
 	return rc.SelectedConfig.Name != "" && rc.SelectedDevice.ID != ""
+}
+
+// Whether the flutter config has enough info to be valid
+func (fc *FlutterConfig) Validate() error {
+	if fc.Name == "" {
+		return errors.New("Name must not be empty")
+	}
+
+	return nil
 }
 
 func (fc *FlutterConfig) Run(device Device) {

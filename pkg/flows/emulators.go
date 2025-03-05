@@ -92,7 +92,7 @@ func (m EmulatorFlowModel) View() string {
 		s += m.table.View()
 		s += quitAndHelpMessage
 		if m.showHelp {
-			s += "\n"
+			s += "\n\n"
 			s += controlsHelpMessage
 		}
 		return s

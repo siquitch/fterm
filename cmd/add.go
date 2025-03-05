@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"flutterterm/pkg/flows"
+	"flutterterm/pkg/utils"
+	"fmt"
 
 	"github.com/spf13/cobra"
 )
@@ -11,7 +13,15 @@ var addCmd = &cobra.Command{
 	Use:   "add",
 	Short: "Add a run configuration to the config file",
 	Run: func(cmd *cobra.Command, args []string) {
-		_, _ = flows.AddFlow()
+		nc, _ := flows.AddFlow()
+
+		err := config.AddRunConfig(nc)
+
+		if err != nil {
+			utils.PrintError(err.Error())
+		} else {
+			utils.PrintSuccess(fmt.Sprintf("%s created successfully", nc.Name))
+		}
 	},
 }
 

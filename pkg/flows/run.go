@@ -177,7 +177,7 @@ func (m RunFlowModel) View() string {
 		return s
 	case getting:
 		spinner := m.spinner.View()
-		s := fmt.Sprintf("%s Getting devices %s", spinner, spinner)
+		s := fmt.Sprintf("%sGetting devices %s", spinner, spinner)
 		return s
 	default:
 		return "Unknown state"

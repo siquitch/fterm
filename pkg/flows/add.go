@@ -4,9 +4,11 @@ import (
 	"flutterterm/pkg/model"
 	"flutterterm/pkg/ui"
 	"fmt"
+	"strings"
 
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
 type runConfigInput int
@@ -29,7 +31,7 @@ var fcInputs = map[runConfigInput]string{
 	flavor:     "Flavor",
 	target:     "Target",
 	define:     "Dart Define File",
-	additional: "Additional args",
+	additional: "Additional Args",
 }
 
 type inputMap = map[runConfigInput]*ui.TextInput
@@ -39,6 +41,7 @@ type AddFlowModel struct {
 	currentInput runConfigInput
 	viewport     ui.ViewportModel
 	inputs       inputMap
+	error        string
 }
 
 func AddFlow() (model.FlutterConfig, error) {
@@ -89,6 +92,12 @@ func (m AddFlowModel) Update(msg Msg) (Model, Cmd) {
 			m.focusPrevious()
 			return m, nil
 		case "enter":
+			m.createConfig()
+			err := m.config.Validate()
+			if err != nil {
+				m.error = err.Error()
+				return m, nil
+			}
 			return m, Quit
 		default:
 			var cmd Cmd
@@ -97,6 +106,19 @@ func (m AddFlowModel) Update(msg Msg) (Model, Cmd) {
 		}
 	}
 	return m, nil
+}
+
+func (m *AddFlowModel) createConfig() {
+	m.config = model.FlutterConfig{
+		Name:           m.inputs[name].Value(),
+		Description:    m.inputs[desc].Value(),
+		Mode:           m.inputs[mode].Value(),
+		Flavor:         m.inputs[flavor].Value(),
+		DartDefineFile: m.inputs[define].Value(),
+	}
+	if m.inputs[additional].Value() != "" {
+		m.config.AdditionalArgs = strings.Split(m.inputs[additional].Value(), " ")
+	}
 }
 
 func (m AddFlowModel) currentInputModel() *ui.TextInput {
@@ -118,16 +140,23 @@ func (m *AddFlowModel) focusPrevious() {
 	if m.currentInput < 0 {
 		m.currentInput = _totalInputs - 1
 	}
-    m.currentInputModel().Focus()
+	m.currentInputModel().Focus()
 }
 
 func (m AddFlowModel) View() string {
-	s := ""
+	errStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("red"))
+	s := "Create a new run configuration\n\n"
 
 	for key := range len(fcInputs) {
 		s += m.inputs[runConfigInput(key)].View()
 		s += "\n"
 	}
+
+	if m.error != "" {
+		s += errStyle.Render(fmt.Sprintf("\n%s\n", m.error))
+	}
+
+	s += "\nArrow keys/tab/shift+tab for navigation\nEnter to submit\nctrl+c to quit"
 
 	return s
 }
