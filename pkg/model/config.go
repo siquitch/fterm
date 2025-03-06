@@ -24,12 +24,10 @@ var mainPaths = []string{mainPath, mainLibPath}
 
 // Config represents the entire configuration structure
 type Config struct {
-	Version         string          `json:"version"`
-	Fvm             bool            `json:"fvm"`
-	DefaultConfig   string          `json:"default_config"`
-	Configs         []FlutterConfig `json:"configs"`
-	FavoriteConfigs []string        `json:"favorite_configs"`
-	Devices         DeviceSettings  `json:"devices"`
+	Version       string          `json:"version"`
+	Fvm           bool            `json:"fvm"`
+	DefaultConfig string          `json:"default_config"`
+	Configs       []FlutterConfig `json:"configs"`
 }
 
 // FlutterConfig represents a single Flutter run configuration
@@ -41,12 +39,7 @@ type FlutterConfig struct {
 	Target         string   `json:"target"`
 	DartDefineFile string   `json:"dart_define_from_file"`
 	AdditionalArgs []string `json:"additional_args"`
-}
-
-// DeviceSettings contains all device-related configurations
-type DeviceSettings struct {
-	FavoriteDevices []string       `json:"favorite_devices"`
-	DeviceConfigs   []DeviceConfig `json:"device_configs"`
+	Favorite       bool     `json:"favorite"`
 }
 
 // DeviceConfig represents a single device configuration
@@ -62,7 +55,7 @@ type RunConfig struct {
 	SelectedDevice Device
 }
 
-func InitConfig(path string, force bool) error {
+func InitConfig(path string, force bool, preserveConfig bool) error {
 	if !AssertRootPath(force) {
 		return errors.New("No pubspec.yaml detected")
 	}
@@ -72,28 +65,31 @@ func InitConfig(path string, force bool) error {
 		target = mainLibPath
 	}
 
-	_, err = LoadConfig(path)
+	oldConfig, err := LoadConfig(path)
 
 	if err == nil && !force {
 		return errors.New("Config already detected, use --force to reset it")
 	}
 
-	c := Config{
-		Version:       version,
-		DefaultConfig: "default",
-		Configs: []FlutterConfig{
+	var rc []FlutterConfig
+
+	if preserveConfig {
+		rc = *&oldConfig.Configs
+	} else {
+		rc = []FlutterConfig{
 			{
 				Name:        "default",
 				Description: "The default run configuration",
 				Mode:        "debug",
 				Target:      target,
 			},
-		},
-		FavoriteConfigs: make([]string, 0),
-		Devices: DeviceSettings{
-			FavoriteDevices: make([]string, 0),
-			DeviceConfigs:   make([]DeviceConfig, 0),
-		},
+		}
+	}
+
+	c := Config{
+		Version:       version,
+		DefaultConfig: "default",
+		Configs:       rc,
 	}
 	return c.SaveConfig(path)
 }
@@ -204,49 +200,18 @@ func (c *Config) GetDefaultConfig() (*FlutterConfig, error) {
 	return c.GetConfigByName(c.DefaultConfig)
 }
 
-func (c *Config) IsFavoriteConfig(name string) bool {
-	for _, favorite := range c.FavoriteConfigs {
-		if favorite == name {
-			return true
-		}
-	}
-	return false
-}
-
-func (c *Config) IsFavoriteDevice(deviceID string) bool {
-	for _, favorite := range c.Devices.FavoriteDevices {
-		if favorite == deviceID {
-			return true
-		}
-	}
-	return false
-}
-
-func (c *Config) AddFavoriteConfig(name string) error {
+func (c *Config) ToggleFavoriteConfig(id string) error {
 	// Check if config exists
-	_, err := c.GetConfigByName(name)
+	rc, err := c.GetConfigByName(id)
 	if err != nil {
 		return err
 	}
 
-	// Don't add if already favorite
-	if c.IsFavoriteConfig(name) {
-		return nil
-	}
+	rc.Favorite = !rc.Favorite
 
-	c.FavoriteConfigs = append(c.FavoriteConfigs, name)
-	return nil
-}
+	err = c.SaveConfig(DefaultConfigPath)
 
-// RemoveFavoriteConfig removes a config from favorites
-func (c *Config) RemoveFavoriteConfig(name string) {
-	newFavorites := []string{}
-	for _, favorite := range c.FavoriteConfigs {
-		if favorite != name {
-			newFavorites = append(newFavorites, favorite)
-		}
-	}
-	c.FavoriteConfigs = newFavorites
+	return err
 }
 
 // ToString returns the configuration as a formatted JSON string

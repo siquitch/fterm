@@ -37,12 +37,12 @@ var runCmd = &cobra.Command{
 			return
 		}
 
-		var runConfig model.RunConfig
+		var runConfigs model.RunConfig
 
 		argLen := len(args)
 
 		if argLen == 0 && !def {
-			runConfig, _ = flows.RunFlow(*config)
+			runConfigs, _ = flows.RunFlow(*config)
 		} else if (argLen == 1 && !def) || (argLen == 0 && def) {
 			var c *model.FlutterConfig
 			var err error
@@ -59,18 +59,18 @@ var runCmd = &cobra.Command{
 			if !d.Verified() {
 				return
 			}
-			runConfig = model.RunConfig{
+			runConfigs = model.RunConfig{
 				SelectedConfig: *c,
 				SelectedDevice: d,
 			}
 		}
 
-		if !runConfig.IsComplete() {
+		if !runConfigs.IsComplete() {
 			return
 		}
 
-		config := runConfig.SelectedConfig
-		config.Run(runConfig.SelectedDevice)
+		rc := runConfigs.SelectedConfig
+		rc.Run(runConfigs.SelectedDevice, config.Fvm)
 	},
 }
 

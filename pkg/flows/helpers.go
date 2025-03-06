@@ -32,8 +32,6 @@ func Quit() Msg {
 	return tea.QuitMsg{}
 }
 
-// Unicode for the star icon
-const starIcon = "\u2B50"
 
 const quitAndHelpMessage = "\nPress q to quit, or ? for help\n"
 const controlsHelpMessage = "Controls\nj, down: go down\nk, up: go up\nh, left: go back (if applicable)\nenter: submit\n\n"

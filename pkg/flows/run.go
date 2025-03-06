@@ -9,14 +9,14 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-type TableManager map[deviceStage]ui.TableModel
+type TableManager map[RunFlowStage]ui.TableModel
 
 type RunFlowModel struct {
 	devices  []model.Device
 	config   model.Config
 	showHelp bool
 
-	stage deviceStage
+	stage RunFlowStage
 	state FlowState
 
 	runConfig    model.RunConfig
@@ -25,10 +25,10 @@ type RunFlowModel struct {
 	spinner ui.SpinnerModel
 }
 
-type deviceStage int
+type RunFlowStage int
 
 const (
-	selectDevice deviceStage = iota
+	selectDevice RunFlowStage = iota
 	selectConfig
 	_length
 )
@@ -104,6 +104,12 @@ func (m RunFlowModel) Update(msg Msg) (Model, Cmd) {
 				m.forward()
 				return m, nil
 			case "f":
+				switch m.stage {
+				case selectConfig:
+					n := m.config.Configs[m.tableManager[selectConfig].Cursor()].Name
+					m.config.ToggleFavoriteConfig(n)
+				}
+				return m, nil
 			case "enter":
 				m, cmd := m.doNextThing()
 				return m, cmd

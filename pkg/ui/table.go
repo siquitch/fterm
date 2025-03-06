@@ -27,8 +27,8 @@ func GetTable(c []TableColumn, r []TableRow) TableModel {
 
 func GetDeviceTable(devices []model.Device) TableModel {
 	c := []TableColumn{
-		{Title: "Name", Width: 40},
-		{Title: "ID", Width: 40},
+		{Title: "Name", Width: 20},
+		{Title: "ID", Width: 30},
 	}
 
 	var r []TableRow
@@ -49,14 +49,20 @@ func GetDeviceTable(devices []model.Device) TableModel {
 
 func GetConfigTable(configs []model.FlutterConfig) TableModel {
 	c := []TableColumn{
-		{Title: "Config", Width: 40},
-		{Title: "Description", Width: 40},
+		{Title: "", Width: 2},
+		{Title: "Config", Width: 20},
+		{Title: "Description", Width: 30},
 	}
 
 	var r []TableRow
 
 	for _, config := range configs {
-		row := TableRow{config.Name, config.Description}
+        s := ""
+
+		if config.Favorite {
+            s = starIcon
+		}
+		row := TableRow{s, config.Name, config.Name}
 
 		r = append(r, row)
 	}
