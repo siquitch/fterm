@@ -3,6 +3,7 @@ package model
 import (
 	"encoding/json"
 	"errors"
+	"flutterterm/pkg/cmd"
 	"flutterterm/pkg/utils"
 	"fmt"
 	"os"
@@ -24,6 +25,7 @@ var mainPaths = []string{mainPath, mainLibPath}
 // Config represents the entire configuration structure
 type Config struct {
 	Version         string          `json:"version"`
+	Fvm             bool            `json:"fvm"`
 	DefaultConfig   string          `json:"default_config"`
 	Configs         []FlutterConfig `json:"configs"`
 	FavoriteConfigs []string        `json:"favorite_configs"`
@@ -174,17 +176,17 @@ func (c *Config) RemoveRunConfig(name string) error {
 		return err
 	}
 
-    configs := make([]FlutterConfig, 0)
+	configs := make([]FlutterConfig, 0)
 
-    for _, config := range c.Configs {
-        if config.Name != name {
-            configs = append(configs, config)
-        }
-    }
+	for _, config := range c.Configs {
+		if config.Name != name {
+			configs = append(configs, config)
+		}
+	}
 
-    c.Configs = configs
+	c.Configs = configs
 
-    err = c.SaveConfig(DefaultConfigPath)
+	err = c.SaveConfig(DefaultConfigPath)
 
 	return err
 }
@@ -257,7 +259,7 @@ func (c *Config) ToString() (string, error) {
 }
 
 // BuildFlutterCommand builds the flutter run command for a given config
-func (fc *FlutterConfig) BuildFlutterCommand(deviceID string) *exec.Cmd {
+func (fc *FlutterConfig) BuildFlutterCommand(deviceID string, fvm bool) *exec.Cmd {
 	args := []string{"run"}
 
 	// Set mode
@@ -289,7 +291,10 @@ func (fc *FlutterConfig) BuildFlutterCommand(deviceID string) *exec.Cmd {
 	args = append(args, fc.AdditionalArgs...)
 
 	// Create the command
-	cmd := exec.Command("flutter", args...)
+	cmd := cmd.FlutterRun(fvm)
+
+	cmd.Args = append(cmd.Args, args...)
+
 	return cmd
 }
 
@@ -307,9 +312,9 @@ func (fc *FlutterConfig) Validate() error {
 	return nil
 }
 
-func (fc *FlutterConfig) Run(device Device) {
+func (fc *FlutterConfig) Run(device Device, fvm bool) {
 	utils.PrintInfo(fmt.Sprintf("Running %s on %s\n\n", fc.Name, device.Name))
-	cmd := fc.BuildFlutterCommand(device.ID)
+	cmd := fc.BuildFlutterCommand(device.ID, fvm)
 
 	// For color and input handling
 	cmd.Stdout = os.Stdout
