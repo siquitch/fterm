@@ -55,14 +55,40 @@ type RunConfig struct {
 	SelectedDevice Device
 }
 
-func InitConfig(path string, force bool, preserveConfig bool) error {
-	if !AssertRootPath(force) {
-		return errors.New("No pubspec.yaml detected")
-	}
+func DefaultConfig() Config {
 	target, err := findDefaultTarget()
 
 	if err != nil {
 		target = mainLibPath
+	}
+
+	var rc []FlutterConfig
+
+	rc = []FlutterConfig{
+		{
+			Name:        "Debug",
+			Description: "Run app in debug mode",
+			Mode:        "debug",
+			Target:      target,
+		},
+		{
+			Name:        "Release",
+			Description: "Run app in release mode",
+			Mode:        "release",
+			Target:      target,
+		},
+	}
+
+	return Config{
+		Version:       version,
+		DefaultConfig: "default",
+		Configs:       rc,
+	}
+}
+
+func InitConfig(path string, force bool, preserveConfig bool) error {
+	if !AssertRootPath(force) {
+		return errors.New("No pubspec.yaml detected")
 	}
 
 	oldConfig, err := LoadConfig(path)
@@ -71,26 +97,15 @@ func InitConfig(path string, force bool, preserveConfig bool) error {
 		return errors.New("Config already detected, use --force to reset it")
 	}
 
-	var rc []FlutterConfig
+	c := DefaultConfig()
+
+	rc := c.Configs
 
 	if preserveConfig {
-		rc = *&oldConfig.Configs
-	} else {
-		rc = []FlutterConfig{
-			{
-				Name:        "default",
-				Description: "The default run configuration",
-				Mode:        "debug",
-				Target:      target,
-			},
-		}
+		rc = oldConfig.Configs
 	}
 
-	c := Config{
-		Version:       version,
-		DefaultConfig: "default",
-		Configs:       rc,
-	}
+	c.Configs = rc
 	return c.SaveConfig(path)
 }
 
@@ -109,7 +124,8 @@ func findDefaultTarget() (string, error) {
 func LoadConfig(path string) (*Config, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read config file: %w", err)
+        c := DefaultConfig()
+		return &c, nil
 	}
 
 	var config Config
