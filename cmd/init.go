@@ -32,7 +32,7 @@ var initCmd = &cobra.Command{
 }
 
 func init() {
-	configCmd.AddCommand(initCmd)
+	rootCmd.AddCommand(initCmd)
 	initCmd.Flags().Bool(force, false, "")
 	initCmd.Flags().BoolP(
 		preserveConfig,
