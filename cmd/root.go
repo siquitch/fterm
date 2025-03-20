@@ -2,8 +2,6 @@ package cmd
 
 import (
 	"flutterterm/pkg/model"
-	"flutterterm/pkg/utils"
-	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -36,11 +34,7 @@ func init() {
 }
 
 func setConfig() {
-	c, err := model.LoadConfig(model.DefaultConfigPath)
-
-	if err != nil {
-		utils.PrintError(fmt.Sprintf("Error loading config, try running flutterterm help init: %s", err.Error()))
-	}
+	c, _ := model.LoadConfig(model.DefaultConfigPath)
 
 	config = c
 }

@@ -87,22 +87,29 @@ func DefaultConfig() Config {
 	}
 }
 
-func InitConfig(path string, force bool, preserveConfig bool) error {
+func InitConfig(path string, force bool, preserve bool) error {
 	if !AssertRootPath(force) {
 		return errors.New("No pubspec.yaml detected")
 	}
 
-	oldConfig, err := LoadConfig(path)
+	var c Config
+	var oldConfig *Config
+	var err error
+
+	if force && !preserve {
+		c = DefaultConfig()
+		err = nil
+	} else {
+		oldConfig, err = LoadConfig(path)
+	}
 
 	if err == nil && !force {
 		return errors.New("Config already detected, use --force to reset it")
 	}
 
-	c := DefaultConfig()
-
 	rc := c.Configs
 
-	if preserveConfig {
+	if preserve {
 		rc = oldConfig.Configs
 	}
 
@@ -126,13 +133,14 @@ func LoadConfig(path string) (*Config, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		c := DefaultConfig()
-		return &c, nil
+		return &c, fmt.Errorf("Failed read config. Try running flutterterm init --force --preserve", err)
 	}
 
 	var config Config
 	err = json.Unmarshal(data, &config)
 	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal config: %w", err)
+		c := DefaultConfig()
+		return &c, fmt.Errorf("Failed to read config. Try running flutterterm init --force --preserve", err)
 	}
 
 	// Fix unmarshaling issue by parsing the raw JSON again
