@@ -12,6 +12,7 @@ const (
 	force     = "force"
 	favorites = "favorites"
 	def       = "default"
+	last      = "last"
 )
 
 // runCmd represents the run command
@@ -33,6 +34,12 @@ var runCmd = &cobra.Command{
 			utils.PrintError(err.Error())
 		}
 
+		last, err := cmd.Flags().GetBool(last)
+
+		if err != nil {
+			utils.PrintError(err.Error())
+		}
+
 		if !model.AssertRootPath(force) {
 			return
 		}
@@ -41,16 +48,20 @@ var runCmd = &cobra.Command{
 
 		argLen := len(args)
 
-		if argLen == 0 && !def {
+		if argLen == 0 && !def && !last {
 			runConfigs, _ = flows.RunFlow(*config)
-		} else if (argLen == 1 && !def) || (argLen == 0 && def) {
+		} else if (argLen == 1 && !def && !last) || (argLen == 0 && def) || (argLen == 0 && last) {
 			var c *model.FlutterConfig
 			var err error
+
 			if def {
 				c, err = config.GetConfigByName(config.DefaultConfig)
+			} else if last {
+				c, err = config.GetConfigByName(config.Last)
 			} else {
 				c, err = config.GetConfigByName(args[0])
 			}
+
 			if err != nil {
 				utils.PrintError(err.Error())
 				return
@@ -70,6 +81,10 @@ var runCmd = &cobra.Command{
 		}
 
 		rc := runConfigs.SelectedConfig
+		config.Last = rc.Name
+
+		go config.SaveConfig(model.DefaultConfigPath)
+
 		rc.Run(runConfigs.SelectedDevice, config.Fvm)
 	},
 }
@@ -78,5 +93,6 @@ func init() {
 	runCmd.Flags().BoolP(favorites, string(favorites[0]), false, "Show favorites")
 	runCmd.Flags().Bool(force, false, "")
 	runCmd.Flags().BoolP(def, string(def[0]), false, "Run default config")
+	runCmd.Flags().BoolP(last, string(last[0]), false, "Run last config")
 	rootCmd.AddCommand(runCmd)
 }
