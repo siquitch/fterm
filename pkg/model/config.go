@@ -28,6 +28,7 @@ type Config struct {
 	Fvm           bool            `json:"fvm"`
 	DefaultConfig string          `json:"default_config"`
 	Configs       []FlutterConfig `json:"configs"`
+	Last          string          `json:"last"`
 }
 
 // FlutterConfig represents a single Flutter run configuration
@@ -124,7 +125,7 @@ func findDefaultTarget() (string, error) {
 func LoadConfig(path string) (*Config, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
-        c := DefaultConfig()
+		c := DefaultConfig()
 		return &c, nil
 	}
 

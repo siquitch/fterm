@@ -173,7 +173,7 @@ func (m RunFlowModel) View() string {
 		s += fmt.Sprintf("Selected Config: %s\n", m.runConfig.SelectedConfig.Name)
 		s += m.tableManager[m.stage].View()
 		s += "\n"
-		s += fmt.Sprintf("\n%d/%d", m.stage+1, _length)
+		s += fmt.Sprintf("\n%d/%d\n", m.stage+1, _length)
 		s += quitAndHelpMessage
 
 		if m.showHelp {
