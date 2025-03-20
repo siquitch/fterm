@@ -8,7 +8,7 @@ The flutter cli is annoying to use when you need to manage things like
 environment variables, or test your app on multiple platforms
 
 flutter-tools.nvim has a nice way to make pre-set configurations, and vs-code
-has launch.json, but these are limited to running inside the respective tools,
+has launch.json, but these are limited to running inside their respective tools,
 which I have found to be inconvenient. 
 
 This tool aims to add functionality directly on the command line by creating
@@ -17,7 +17,7 @@ run configurations, then this tool can help.
 
 ## Usage
 
-Run ```flutterterm config init``` in the root of your flutter project.
+Run ```flutterterm init``` in the root of your flutter project.
 
 This will create a `.fterm_config.json` file
 
@@ -26,37 +26,47 @@ This will create a `.fterm_config.json` file
 ```json
 {
   "version": "0.0.3",
+  "fvm": false,
   "default_config": "default",
   "configs": [
     {
-      "name": "default",
-      "description": "The default run configuration",
+      "name": "Debug",
+      "description": "Run app in debug mode",
       "mode": "debug",
       "flavor": "",
       "target": "lib/main.dart",
       "dart_define_from_file": "",
-      "additional_args": null
+      "additional_args": null,
+      "favorite": false
+    },
+    {
+      "name": "Release",
+      "description": "Run app in release mode",
+      "mode": "release",
+      "flavor": "",
+      "target": "lib/main.dart",
+      "dart_define_from_file": "",
+      "additional_args": null,
+      "favorite": false
     }
   ],
-  "favorite_configs": [],
-  "devices": {
-    "favorite_devices": [],
-    "device_configs": []
-  }
+  "last": ""
 }
 ```
 
 ### **Configuration Fields**
 
 - **`name`**: The name of the configuration.
+- **`description`**: A description of the configuration.
 - **`mode`**: The mode to run your app in (`debug`, `release`, or `profile`).
 - **`flavor`**: The flavor to use (equivalent to `--flavor`).
 - **`target`**: The target file to run (`-t` or `--target`). Defaults to `main.dart` if not specified.
 - **`dart_define_from_file`**: Defines environment variables from a file (equivalent to `--dart-define-from-file`).
 - **`additional_args`**: Pass in additional args for the command
+- **`favorite`**: Favorite this config to sort to the top (not yet implemented)
 
 
-### **Running Commands**
+### **Commands**
 
 #### Get emulators to launch
 ```bash
@@ -74,4 +84,7 @@ flutterterm run [config]
 ```bash
 flutterterm run -d
 ```
-
+#### Run the last run config
+```bash
+flutterterm run -l
+```
