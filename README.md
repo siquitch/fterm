@@ -1,6 +1,6 @@
-# Flutterterm: A Flutter CLI Wrapper
+# Fterm
 
-**Flutterterm** is a cli tool that manages flutter run configurations
+**Fterm** is a run configuration manager for flutter
 
 ## Inspiration
 
