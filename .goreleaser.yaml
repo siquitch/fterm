@@ -51,3 +51,15 @@ release:
     ---
 
     Released by [GoReleaser](https://github.com/goreleaser/goreleaser).
+
+brews:
+  -
+    tap:
+      owner: eliogilvy
+      name: homebrew-fterm
+
+    homepage: 'https://github.com/eliogilvy/fterm/'
+
+    description: 'Fterm is a run configuration manager for flutter'
+
+
