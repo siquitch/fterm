@@ -53,13 +53,12 @@ release:
     Released by [GoReleaser](https://github.com/goreleaser/goreleaser).
 
 brews:
-  -
-    tap:
+  - name: fterm
+    homepage: 'https://github.com/siquitch/fterm/'
+    description: 'Fterm is a run configuration manager for flutter'
+    repository:
       owner: siquitch
       name: homebrew-fterm
-
-    homepage: 'https://github.com/siquitch/fterm/'
-
-    description: 'Fterm is a run configuration manager for flutter'
-
+      token: "{{ .Env.GITHUB_TOKEN }}"
+    license: "MIT"
 
