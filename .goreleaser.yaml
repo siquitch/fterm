@@ -55,10 +55,10 @@ release:
 brews:
   -
     tap:
-      owner: eliogilvy
+      owner: siquitch
       name: homebrew-fterm
 
-    homepage: 'https://github.com/eliogilvy/fterm/'
+    homepage: 'https://github.com/siquitch/fterm/'
 
     description: 'Fterm is a run configuration manager for flutter'
 
