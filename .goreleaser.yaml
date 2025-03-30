@@ -59,6 +59,5 @@ brews:
     repository:
       owner: siquitch
       name: homebrew-fterm
-      token: "{{ .Env.GITHUB_TOKEN }}"
+      token: "{{ .Env.TAP_GITHUB_TOKEN }}"
     license: "MIT"
-
