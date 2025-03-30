@@ -2,8 +2,9 @@ name: Continuous Deployment
 
 on:
   push:
-    # tags:
-    #   - 'v*' 
+    tags:
+      - 'v*' 
+      - 'test'
 
 permissions:
   contents: write
