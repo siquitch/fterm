@@ -28,7 +28,6 @@ type Config struct {
 	Fvm           bool            `json:"fvm"`
 	DefaultConfig string          `json:"default_config"`
 	Configs       []FlutterConfig `json:"configs"`
-	Last          string          `json:"last"`
 }
 
 // FlutterConfig represents a single Flutter run configuration
@@ -133,14 +132,14 @@ func LoadConfig(path string) (*Config, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		c := DefaultConfig()
-		return &c, fmt.Errorf("Failed read config. Try running flutterterm init --force --preserve", err)
+		return &c, fmt.Errorf("Failed to read config. Try running flutterterm init --force --preserve")
 	}
 
 	var config Config
 	err = json.Unmarshal(data, &config)
 	if err != nil {
 		c := DefaultConfig()
-		return &c, fmt.Errorf("Failed to read config. Try running flutterterm init --force --preserve", err)
+		return &c, fmt.Errorf("Failed to read config. Try running flutterterm init --force --preserve")
 	}
 
 	// Fix unmarshaling issue by parsing the raw JSON again

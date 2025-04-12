@@ -56,8 +56,6 @@ var runCmd = &cobra.Command{
 
 			if def {
 				c, err = config.GetConfigByName(config.DefaultConfig)
-			} else if last {
-				c, err = config.GetConfigByName(config.Last)
 			} else {
 				c, err = config.GetConfigByName(args[0])
 			}
@@ -81,7 +79,6 @@ var runCmd = &cobra.Command{
 		}
 
 		rc := runConfigs.SelectedConfig
-		config.Last = rc.Name
 
 		go config.SaveConfig(model.DefaultConfigPath)
 
