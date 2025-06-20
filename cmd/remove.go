@@ -4,7 +4,7 @@ Copyright © 2025 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"flutterterm/pkg/utils"
+	"fterm/pkg/utils"
 	"fmt"
 
 	"github.com/spf13/cobra"

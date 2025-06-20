@@ -3,8 +3,8 @@ package model
 import (
 	"encoding/json"
 	"errors"
-	"flutterterm/pkg/cmd"
-	"flutterterm/pkg/utils"
+	"fterm/pkg/cmd"
+	"fterm/pkg/utils"
 	"fmt"
 	"os"
 	"os/exec"
@@ -132,14 +132,14 @@ func LoadConfig(path string) (*Config, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		c := DefaultConfig()
-		return &c, fmt.Errorf("Failed to read config. Try running flutterterm init --force --preserve")
+		return &c, fmt.Errorf("Failed to read config. Try running fterm init --force --preserve")
 	}
 
 	var config Config
 	err = json.Unmarshal(data, &config)
 	if err != nil {
 		c := DefaultConfig()
-		return &c, fmt.Errorf("Failed to read config. Try running flutterterm init --force --preserve")
+		return &c, fmt.Errorf("Failed to read config. Try running fterm init --force --preserve")
 	}
 
 	// Fix unmarshaling issue by parsing the raw JSON again

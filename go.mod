@@ -1,4 +1,4 @@
-module flutterterm
+module fterm
 
 go 1.24.1
 

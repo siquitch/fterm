@@ -1,9 +1,9 @@
 package cmd
 
 import (
-	"flutterterm/pkg/flows"
-	"flutterterm/pkg/model"
-	"flutterterm/pkg/utils"
+	"fterm/pkg/flows"
+	"fterm/pkg/model"
+	"fterm/pkg/utils"
 
 	"github.com/spf13/cobra"
 )
@@ -64,7 +64,7 @@ var runCmd = &cobra.Command{
 				utils.PrintError(err.Error())
 				return
 			}
-			d, _ := flows.DeviceFlow()
+			d, _ := flows.DeviceFlow(*config)
 			if !d.Verified() {
 				return
 			}

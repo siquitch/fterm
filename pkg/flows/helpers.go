@@ -1,7 +1,7 @@
 package flows
 
 import (
-	"flutterterm/pkg/model"
+	"fterm/pkg/model"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -31,7 +31,6 @@ type KeyMsg = tea.KeyMsg
 func Quit() Msg {
 	return tea.QuitMsg{}
 }
-
 
 const quitAndHelpMessage = "\nPress q to quit, or ? for help\n"
 const controlsHelpMessage = "Controls\nj, down: go down\nk, up: go up\nh, left: go back (if applicable)\nenter: submit\n\n"

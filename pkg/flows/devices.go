@@ -1,10 +1,10 @@
 package flows
 
 import (
-	"flutterterm/pkg/model"
-	"flutterterm/pkg/ui"
-	"flutterterm/pkg/utils"
 	"fmt"
+	"fterm/pkg/model"
+	"fterm/pkg/ui"
+	"fterm/pkg/utils"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -16,11 +16,12 @@ type DeviceFlowModel struct {
 	selectedDevice model.Device
 	spinner        ui.SpinnerModel
 	showHelp       bool
+	config         model.Config
 }
 
 // Entry point for this flow
-func DeviceFlow() (model.Device, error) {
-	d := InitialDeviceFlowModel()
+func DeviceFlow(config model.Config) (model.Device, error) {
+	d := InitialDeviceFlowModel(config)
 
 	p := tea.NewProgram(d)
 
@@ -36,15 +37,16 @@ func DeviceFlow() (model.Device, error) {
 	return d.selectedDevice, err
 }
 
-func InitialDeviceFlowModel() DeviceFlowModel {
+func InitialDeviceFlowModel(config model.Config) DeviceFlowModel {
 	return DeviceFlowModel{
 		state:   getting,
 		spinner: ui.GetSpinner(),
+		config:  config,
 	}
 }
 
 func (m DeviceFlowModel) Init() Cmd {
-	return tea.Batch(getDevices(), m.spinner.Tick)
+	return tea.Batch(getDevices(m.config.Fvm), m.spinner.Tick)
 }
 
 func (m DeviceFlowModel) Update(msg Msg) (Model, Cmd) {

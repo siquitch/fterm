@@ -1,10 +1,10 @@
 package flows
 
 import (
-	"flutterterm/pkg/model"
-	"flutterterm/pkg/ui"
-	"flutterterm/pkg/utils"
 	"fmt"
+	"fterm/pkg/model"
+	"fterm/pkg/ui"
+	"fterm/pkg/utils"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -17,25 +17,27 @@ type EmulatorFlowModel struct {
 	coldStart        bool // Cold start
 	table            ui.TableModel
 	showHelp         bool
+	config           model.Config
 }
 
-func EmulatorFlow(isCold bool) error {
-	p := tea.NewProgram(InitialEmulatorModel(isCold))
+func EmulatorFlow(config model.Config, isCold bool) error {
+	p := tea.NewProgram(InitialEmulatorModel(config, isCold))
 
 	_, err := p.Run()
 
 	return err
 }
 
-func InitialEmulatorModel(isCold bool) EmulatorFlowModel {
+func InitialEmulatorModel(config model.Config, isCold bool) EmulatorFlowModel {
 	return EmulatorFlowModel{
 		state:   getting,
 		spinner: ui.GetSpinner(),
+		config:  config,
 	}
 }
 
 func (m EmulatorFlowModel) Init() Cmd {
-	return tea.Batch(m.spinner.Tick, getEmulators())
+	return tea.Batch(m.spinner.Tick, getEmulators(m.config.Fvm))
 }
 
 func (m EmulatorFlowModel) Update(msg Msg) (Model, Cmd) {
@@ -108,9 +110,9 @@ func (m EmulatorFlowModel) View() string {
 
 }
 
-func getEmulators() tea.Cmd {
+func getEmulators(fvm bool) tea.Cmd {
 	return func() tea.Msg {
-		cmd := model.FlutterEmulators()
+		cmd := model.FlutterEmulators(fvm)
 
 		output, err := cmd.Output()
 
@@ -129,7 +131,7 @@ func getEmulators() tea.Cmd {
 
 func (m EmulatorFlowModel) launchEmulator() Cmd {
 	return func() Msg {
-		cmd := m.selectedEmulator.BuildLaunchEmulatorCommand(m.coldStart)
+		cmd := m.selectedEmulator.BuildLaunchEmulatorCommand(m.config, m.coldStart)
 		err := cmd.Run()
 		if err != nil {
 			return CmdError(err.Error())

@@ -1,9 +1,9 @@
 package flows
 
 import (
-	"flutterterm/pkg/model"
-	"flutterterm/pkg/ui"
-	"flutterterm/pkg/utils"
+	"fterm/pkg/model"
+	"fterm/pkg/ui"
+	"fterm/pkg/utils"
 	"fmt"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -69,7 +69,7 @@ func InitialRunModel(config model.Config) RunFlowModel {
 }
 
 func (m RunFlowModel) Init() Cmd {
-	return tea.Batch(m.spinner.Tick, getDevices())
+	return tea.Batch(m.spinner.Tick, getDevices(m.config.Fvm))
 }
 
 func (m RunFlowModel) Update(msg Msg) (Model, Cmd) {
@@ -194,9 +194,9 @@ func (m RunFlowModel) CurrentTable() ui.TableModel {
 	return m.tableManager[m.stage]
 }
 
-func getDevices() Cmd {
+func getDevices(fvm bool) Cmd {
 	return func() Msg {
-		cmd := model.FlutterDevices()
+		cmd := model.FlutterDevices(fvm)
 		output, err := cmd.Output()
 
 		if err != nil {

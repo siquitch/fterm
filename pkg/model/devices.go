@@ -67,22 +67,47 @@ func (d Device) Verified() bool {
 	return d.Name != "" && d.ID != ""
 }
 
-func (d Device) BuildLaunchEmulatorCommand(isCold bool) *exec.Cmd {
+func (d Device) BuildLaunchEmulatorCommand(config Config, isCold bool) *exec.Cmd {
 	args := []string{"emulators", "--launch", d.Name}
 
 	if isCold {
 		args = append(args, "--cold")
 	}
 
-	c := exec.Command("flutter", args...)
+	if config.Fvm {
+		args = append([]string{"flutter"}, args...)
+	}
+
+	var c *exec.Cmd
+
+	if config.Fvm {
+		c = exec.Command("fvm", args...)
+	} else {
+		c = exec.Command("flutter", args...)
+	}
 
 	return c
 }
 
-func FlutterEmulators() *exec.Cmd {
-	return exec.Command("flutter", "emulators")
+func FlutterEmulators(fvm bool) *exec.Cmd {
+	var c *exec.Cmd
+	if fvm {
+		args := []string{"flutter", "emulators"}
+		c = exec.Command("fvm", args...)
+	} else {
+		c = exec.Command("flutter", "emulators")
+	}
+
+	return c
 }
 
-func FlutterDevices() *exec.Cmd {
-	return exec.Command("flutter", "devices", "--machine")
+func FlutterDevices(fvm bool) *exec.Cmd {
+	var c *exec.Cmd
+	if fvm {
+		args := []string{"flutter", "devices", "--machine"}
+		c = exec.Command("fvm", args...)
+	} else {
+		c = exec.Command("flutter", "devices", "--machine")
+	}
+	return c
 }

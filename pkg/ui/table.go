@@ -1,7 +1,7 @@
 package ui
 
 import (
-	"flutterterm/pkg/model"
+	"fterm/pkg/model"
 
 	"github.com/charmbracelet/bubbles/table"
 	"github.com/charmbracelet/lipgloss"

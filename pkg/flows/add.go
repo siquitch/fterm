@@ -1,8 +1,8 @@
 package flows
 
 import (
-	"flutterterm/pkg/model"
-	"flutterterm/pkg/ui"
+	"fterm/pkg/model"
+	"fterm/pkg/ui"
 	"fmt"
 	"strings"
 

@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	"flutterterm/pkg/model"
-	"flutterterm/pkg/utils"
+	"fterm/pkg/model"
+	"fterm/pkg/utils"
 	"fmt"
 
 	"github.com/spf13/cobra"

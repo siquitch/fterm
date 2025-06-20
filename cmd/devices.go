@@ -1,9 +1,9 @@
 package cmd
 
 import (
-	"flutterterm/pkg/model"
-	"flutterterm/pkg/utils"
 	"fmt"
+	"fterm/pkg/model"
+	"fterm/pkg/utils"
 
 	"github.com/spf13/cobra"
 )
@@ -14,12 +14,12 @@ var devicesCmd = &cobra.Command{
 	Short: "Select a device to run your flutter app",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		execute()
+		execute(*&config.Fvm)
 	},
 }
 
-func execute() {
-	cmd := model.FlutterDevices()
+func execute(fvm bool) {
+	cmd := model.FlutterDevices(fvm)
 	output, err := cmd.Output()
 	if err != nil {
 		utils.PrintError(err.Error())

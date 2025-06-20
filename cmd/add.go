@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	"flutterterm/pkg/flows"
-	"flutterterm/pkg/utils"
+	"fterm/pkg/flows"
+	"fterm/pkg/utils"
 	"fmt"
 
 	"github.com/spf13/cobra"

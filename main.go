@@ -1,6 +1,6 @@
 package main
 
-import "flutterterm/cmd"
+import "fterm/cmd"
 
 func main() {
 	cmd.Execute()

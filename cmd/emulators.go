@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	"flutterterm/pkg/flows"
-	"flutterterm/pkg/utils"
+	"fterm/pkg/flows"
+	"fterm/pkg/utils"
 
 	"github.com/spf13/cobra"
 )
@@ -19,7 +19,7 @@ var emulatorsCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		isCold, err := cmd.Flags().GetBool(cold)
 
-		err = flows.EmulatorFlow(isCold)
+		err = flows.EmulatorFlow(*config, isCold)
 
 		if err != nil {
 			utils.PrintError(err.Error())

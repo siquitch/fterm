@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"flutterterm/pkg/model"
+	"fterm/pkg/model"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -11,7 +11,7 @@ var config *model.Config
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "flutterterm",
+	Use:   "fterm",
 	Short: "A flutter command line tool",
 	Long:  ``,
 	// Uncomment the following line if your bare application
